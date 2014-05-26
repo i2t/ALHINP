@@ -4,49 +4,65 @@
  *
  * Created on 10 de octubre de 2013, 16:27
  */
-#include "rofl_config.h"
+
+#include <cstdlib>
+#include <signal.h>
+#include <sys/wait.h>
 #include <rofl/platform/unix/cunixenv.h>
-#include <rofl/platform/unix/cdaemon.h>
-#include <rofl/common/cparams.h>
-#include "rofl/common/crofbase.h"
+#include <rofl/common/ciosrv.h>
 #include "src/proxy/ALHINP.h"
 
-
-#define ETHSWCTLD_LOG_FILE "/var/log/ALHINP.log"
-#define ETHSWCTLD_PID_FILE "/var/run/ALHINP.pid"
+#define CONTROLLER_IP "10.98.1.33"
+#define CONTROLLER_PORT 6633
+#define MAX_RETRY 10
 
 using namespace rofl;
 
-int
-main(int argc, char** argv)
-{
-	rofl::cunixenv env_parser(argc, argv);
+//Handler to stop ciosrv
+void interrupt_handler(int dummy=0) {
+	//Only stop ciosrv 
+	ciosrv::stop();
+}
+
+void TCL_finish(int dummy=0) {
+	//Only stop ciosrv 
+    wait(NULL);
+    std::cout<<"Alma recogida\n";
+}
+
+int main(int argc, char** argv){
+
+
+	//Capture control+C
+	signal(SIGINT, interrupt_handler);
+        signal(SIGCLD, TCL_finish);
 
 	/* update defaults */
-	env_parser.add_option(coption(true,REQUIRED_ARGUMENT,'l',"logfile","Log file used when daemonization", ETHSWCTLD_LOG_FILE));
-	env_parser.add_option(coption(true, REQUIRED_ARGUMENT, 'p', "pidfile", "set pid-file", std::string(ETHSWCTLD_PID_FILE)));
+	rofl::csyslog::initlog(
+			rofl::csyslog::LOGTYPE_FILE,//STDERR
+			rofl::csyslog::DBG,//EMERGENCY
+			std::string("./controlador.log"),
+			"an example: ");
+
+	rofl::csyslog::set_debug_level("ciosrv", "emergency");
+	rofl::csyslog::set_debug_level("cthread", "emergency");
+
+        rofl::ciosrv::init();
         
-#ifdef ROFL_HAVE_OPENSSL
-	env_parser.add_option(coption(true, REQUIRED_ARGUMENT, 't', "cert-and-key-file", "Certificate and key to encrypt control traffic (PEM format)", std::string("")));
-#endif
-	//Parse
-	env_parser.parse_args();
-
-	if (not env_parser.is_arg_set("daemonize")) {
-		// only do this in non
-		std::string ident(env_parser.get_arg("logfile"));
-
-		logging::init();
-		rofl::logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
-	} else {
-
-		rofl::cdaemon::daemonize(env_parser.get_arg("pidfile"), env_parser.get_arg("logfile"));
-		rofl::logging::set_debug_level(atoi(env_parser.get_arg("debug").c_str()));
-		rofl::logging::notice << "[ethswctld][main] daemonizing successful" << std::endl;
-	}
+        
         ALHINP proxy;
-	cioloop::run();
-        cioloop::shutdown();
 
-	return 0;
+        //ciosrv run. Only will stop in Ctrl+C
+	rofl::ciosrv::run();
+
+	//Printing nice trace
+	printf("\nCleaning the house...\n");
+        fflush(stdout);
+        
+	//ciosrv destroy
+	rofl::ciosrv::destroy();
+	printf("House cleaned!\nGoodbye\n");
+        fflush(stdout);
+	
+	exit(EXIT_SUCCESS);
 }
