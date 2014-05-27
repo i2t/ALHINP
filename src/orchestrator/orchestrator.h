@@ -9,11 +9,20 @@
 #define	ORCHESTRATOR_H
 
 class orchestrator {
+
+private:
+    
 public:
     orchestrator();
     orchestrator(const orchestrator& orig);
     virtual ~orchestrator();
-private:
+    void AGS_connected();
+    void AGS_disconnected();
+    void OUI_connected();
+    void OUI_disconnected();
+    void CTRL_disconnected();
+    void CTRL_connected();
+
 
 };
 

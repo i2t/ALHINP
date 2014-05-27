@@ -18,4 +18,27 @@ orchestrator::orchestrator(const orchestrator& orig) {
 
 orchestrator::~orchestrator() {
 }
-
+void
+orchestrator::AGS_connected(){
+    
+}
+void
+orchestrator::AGS_disconnected(){
+    
+}
+void
+orchestrator::OUI_connected(){
+    
+}
+void
+orchestrator::OUI_disconnected(){
+    
+}
+void
+orchestrator::CTRL_connected(){
+    
+}
+void
+orchestrator::CTRL_disconnected(){
+    
+}
