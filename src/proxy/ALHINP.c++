@@ -25,9 +25,10 @@ using namespace rofl;
 ALHINP::ALHINP()
 {
     //listen for OUI
+    network= new discovery(this);
     rpc_listen_for_dpts(caddress(AF_INET, "158.227.98.21", 6633));
     //listen for AGG
-    rpc_listen_for_dpts(caddress(AF_INET, "158.227.98.21", 6633));
+    //rpc_listen_for_dpts(caddress(AF_INET, "158.227.98.21", 6633));
 
 }
 
@@ -39,9 +40,10 @@ ALHINP::~ALHINP() {
 }
 void
 ALHINP::handle_dpath_open(cofdpt* dpt){
-    if(network.is_aggregator(dpt->get_dpid())){
+    if(network->is_aggregator(dpt->get_dpid())){
         //AGS connected
-        manager.AGS_connected();
+        network->AGS_connected(dpt);
+        send_barrier_request(ALHINP::dpt_find((uint64_t)1));;
         
     }else{
         //An OUI is connected
@@ -51,9 +53,9 @@ ALHINP::handle_dpath_open(cofdpt* dpt){
 }
 void
 ALHINP::handle_dpath_close(cofdpt* dpt){
-    if(network.is_aggregator(dpt->get_dpid())){
+    if(network->is_aggregator(dpt->get_dpid())){
         //AGS connected
-        manager.AGS_disconnected();
+        network->AGS_disconnected();
         
     }else{
         //An OUI is connected
@@ -66,7 +68,8 @@ ALHINP::handle_ctrl_open(cofctl *ctl){
 }
 void
 ALHINP::handle_ctrl_close(cofctl *ctl){
-    
+    controller=0;
+    std::cout<<"[WARNING]: Controller disconnected\n";
 }
 void
 ALHINP::handle_packet_in(cofdpt *dpt, cofmsg_packet_in *msg){
@@ -74,6 +77,17 @@ ALHINP::handle_packet_in(cofdpt *dpt, cofmsg_packet_in *msg){
 }
 
 void ALHINP::send_packet_in_ctrl(uint32_t buffer_id, uint16_t total_len,uint8_t reason,uint8_t table_id,uint64_t cookie,uint16_t in_port, cofmatch &match,uint8_t *data,size_t datalen) {
-    send_packet_in_message(controller, buffer_id, total_len, reason, table_id, cookie, in_port, match, data, datalen);
+    if(controller!=0){
+        send_packet_in_message(controller, buffer_id, total_len, reason, table_id, cookie, in_port, match, data, datalen);
+    }else{
+        std::cout<<"[WARNING]:Dropping PACKET_IN, no controller connected\n";
+    }
    
+}
+void ALHINP::install_flowentry(){
+    
+}
+void ALHINP::sendbarrier(uint64_t dpid){
+    std::cout<<"HOOOLA\n";
+    
 }
