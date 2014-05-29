@@ -147,7 +147,7 @@ void orchestrator::dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg){
             delete msg; 
             return;
         }
-        std::cout<<"testpoint";
+        
         fflush(stdout);
         try{
         if(msg->get_match().get_udp_dst()==67 && msg->get_match().get_ipv4_src_value().get_ipv4_addr()==caddress(AF_INET,"10.10.20.1").get_ipv4_addr()){ // CM_traffic BOOTP
@@ -186,15 +186,13 @@ void orchestrator::dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg){
             return;            
         }
         }catch(...){}
-        std::cout<<" testpoint2\n";
-        fflush(stdout);        
         cmacaddr OUI(OUI_MAC);
         if(msg->get_match().get_in_port()==CMTS_PORT && msg->get_match().get_eth_src_addr().get_mac()-OUI.get_mac()<OUI.get_mac()){
-            std::cout << "OUI detected: "<< msg->get_match().get_eth_src_addr().c_str() <<"with VLAN "<< msg->get_match().get_vlan_vid() <<"\n";
+            std::cout << "OUI detected: "<< msg->get_match().get_eth_src_addr().c_str() <<" with VLAN "<< msg->get_match().get_vlan_vid() <<"\n";
             fflush(stdout);
-            proxy->discover->AGS_enable_OUI_traffic(dpt , msg->get_match().get_eth_dst_addr().get_mac(), msg->get_match().get_vlan_vid());
-            //delete msg; 
-            //return;
+            proxy->discover->AGS_enable_OUI_traffic(dpt , msg->get_match().get_eth_src_addr().get_mac(), msg->get_match().get_vlan_vid());
+            delete msg; 
+            return;
         }
         
     }

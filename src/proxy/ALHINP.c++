@@ -19,12 +19,12 @@ using namespace rofl;
 
 ALHINP::ALHINP()
 {
-    //listen for OUI
+    //listen for AGS
     discover= new discovery(this);
     manager= new orchestrator(this);
     rpc_listen_for_dpts(caddress(AF_INET, "158.227.98.21", 6633));
-    //listen for AGG
-    //rpc_listen_for_dpts(caddress(AF_INET, "158.227.98.21", 6633));
+    //listen for OUI
+    rpc_listen_for_dpts(caddress(AF_INET, "192.168.10.1", 6633));
 
 }
 
@@ -39,6 +39,7 @@ ALHINP::handle_dpath_open(cofdpt* dpt){
     if(discover->is_aggregator(dpt->get_dpid())){
         manager->AGS_connected(dpt);
     }else{
+        std::cout<<"HAPPY";
        // manager->OUI_connected(dpt);
     }
 

@@ -11,9 +11,11 @@
 #include <rofl/common/crofbase.h>
 #include "discovery.h"
 
+
 #define __STDC_FORMAT_MACROS
 
-
+#define C_TAG 0x8100
+#define S_TAG 0x88A8
 
 discovery::discovery(ALHINP *proxye) {
     proxy=proxye;
@@ -149,6 +151,61 @@ discovery::register_CM(uint64_t mac){
 }
 void 
 discovery::AGS_enable_OUI_traffic(cofdpt* dpt,uint64_t mac, uint16_t vlan){
-    
+        //proxy.translator.insert_mac_vlan(mac.get_mac(),vlan);
+        
+    cflowentry fe_up(0x03); 
+        fe_up.set_command(OFPFC_ADD);
+        fe_up.set_buffer_id(OFP_NO_BUFFER);
+        fe_up.set_idle_timeout(0);
+        fe_up.set_hard_timeout(0);
+        fe_up.set_table_id(0);
+        fe_up.set_cookie(cookie_mask);
+        fe_up.set_cookie_mask(cookie_mask);
+        fe_up.set_flags(0);
+        fe_up.set_priority(5);
+
+        fe_up.match.set_in_port(CMTS_PORT);
+        fe_up.match.set_eth_src(cmacaddr(mac));
+        fe_up.match.set_vlan_vid(OFPVID_PRESENT|vlan);
+        fe_up.instructions.next() = cofinst_apply_actions(OFP12_VERSION);
+        fe_up.instructions.back().actions.next() = cofaction_pop_vlan(OFP12_VERSION);
+        fe_up.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,PROXY_PORT);
+    proxy->send_flow_mod_message(dpt,fe_up); 
+        
+    cflowentry fe_down(0x03); 
+        fe_down.set_command(OFPFC_ADD);
+        fe_down.set_buffer_id(OFP_NO_BUFFER);
+        fe_down.set_idle_timeout(0);
+        fe_down.set_hard_timeout(0);
+        fe_down.set_table_id(0);
+        fe_down.set_cookie(cookie_mask);
+        fe_down.set_cookie_mask(cookie_mask);
+        fe_down.set_flags(0);
+        fe_down.set_priority(5);
+        fe_down.match.set_in_port(PROXY_PORT);
+        fe_down.match.set_eth_dst(mac);
+        fe_down.instructions.next() = cofinst_apply_actions(OFP12_VERSION);
+        fe_down.instructions.back().actions.next() = cofaction_push_vlan(OFP12_VERSION,C_TAG);
+        fe_down.instructions.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_vlan_vid(vlan));//reg from MAC
+        fe_down.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,CMTS_PORT);
+    proxy->send_flow_mod_message(dpt,fe_down);  
+
+    cflowentry fe_data(0x03); 
+        fe_data.set_command(OFPFC_ADD);
+        fe_data.set_buffer_id(OFP_NO_BUFFER);
+        fe_data.set_idle_timeout(0);
+        fe_data.set_hard_timeout(0);
+        fe_data.set_table_id(0);
+        fe_data.set_cookie(cookie_mask);
+        fe_data.set_cookie_mask(cookie_mask);
+        fe_data.set_flags(0);
+        fe_data.set_priority(4);
+        fe_data.match.set_in_port(CMTS_PORT);
+        fe_data.instructions.next() = cofinst_write_metadata(OFP12_VERSION,(uint64_t)vlan,0);
+        fe_data.instructions.next() = cofinst_apply_actions(OFP12_VERSION);
+        fe_data.instructions.back().actions.next() = cofaction_pop_vlan(OFP12_VERSION);
+        fe_data.instructions.next() = cofinst_goto_table(OFP12_VERSION,1);
+        
+    proxy->send_flow_mod_message(dpt,fe_data);    
     
 }
