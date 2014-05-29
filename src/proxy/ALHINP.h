@@ -48,7 +48,7 @@ private:
     virtual void handle_dpath_close(cofdpt *dpt);
     virtual void handle_ctrl_open(cofctl *ctl);
     virtual void handle_ctrl_close(cofctl *ctl);
-    void sendbarrier(uint64_t dpid);
+
 //  
 //    //SOUTHBOUND INTERFACE
 //    virtual void handle_aggregate_stats_reply(cofdpt* dpt, cofmsg_aggr_stats_reply* msg);
@@ -63,7 +63,6 @@ private:
 //    virtual void handle_flow_stats_reply (cofdpt *dpt, cofmsg_flow_stats_reply *msg);
 //    virtual void handle_get_config_reply (cofdpt *dpt, cofmsg_get_config_reply *msg);
     virtual void handle_packet_in(cofdpt *dpt, cofmsg_packet_in *msg);
-    void send_packet_in_ctrl(uint32_t buffer_id, uint16_t total_len,uint8_t reason,uint8_t table_id,uint64_t cookie,uint16_t in_port, cofmatch &match,uint8_t *data,size_t datalen);
 //    virtual void handle_port_stats_reply (cofdpt *dpt, cofmsg_port_stats_reply *msg);
 //    virtual void handle_port_status (cofdpt *dpt, cofmsg_port_status *msg);
 //    virtual void handle_queue_get_config_reply (cofdpt *dpt, cofmsg_queue_get_config_reply *msg);

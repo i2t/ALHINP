@@ -8,6 +8,7 @@
 #include <rofl/common/crofbase.h>
 #include "orchestrator.h"
 #include "../proxy/ALHINP.h"
+#include "../discovery/discovery.h"
 
 #define __STDC_FORMAT_MACROS
 
@@ -29,34 +30,21 @@ orchestrator::orchestrator(const orchestrator& orig) {
 orchestrator::~orchestrator() {
 }
 
-void
-orchestrator::OUI_connected(){
-    
-}
+//void
+//orchestrator::OUI_connected(cofpdt* dpt){
+//    
+//}
 void
 orchestrator::OUI_disconnected(){
     
 }
-void
-orchestrator::AGS_connected(cofdpt* dpt){
+void orchestrator::AGS_connected(cofdpt* dpt){
     AGS_reset_flows(dpt);
     AGS_set_port_behavior(dpt);
+    proxy->discover->detect_CM(dpt);
     std::cout<<"AGS succesfully inited";
 }
-void
-orchestrator::AGS_disconnected(cofdpt* dpt){
-    
-}
-void
-orchestrator::CTRL_connected(){
-    
-}
-void
-orchestrator::CTRL_disconnected(){
-    
-}
-void
-orchestrator::AGS_reset_flows(cofdpt* dpt){
+void orchestrator::AGS_reset_flows(cofdpt* dpt){
     //RESET any existing flow
     cflowentry reset(OFP12_VERSION);
         reset.set_command(OFPFC_DELETE);
@@ -66,8 +54,7 @@ orchestrator::AGS_reset_flows(cofdpt* dpt){
     proxy->send_flow_mod_message(dpt,reset);
     std::cout<<"Flow RESET over AGS";
 }
-void 
-orchestrator::AGS_set_port_behavior(cofdpt* dpt){
+void orchestrator::AGS_set_port_behavior(cofdpt* dpt){
     std::map<uint32_t, cofport*>::iterator port_it;
     std::map<uint32_t, cofport*> portlist= dpt->get_ports();
     for (port_it = portlist.begin(); port_it != portlist.end(); ++port_it) {
@@ -100,8 +87,20 @@ orchestrator::AGS_set_port_behavior(cofdpt* dpt){
     }
 
 }
-void 
-orchestrator::OUI_set_port_behavior(cofdpt* dpt){
+void orchestrator::AGS_disconnected(cofdpt* dpt){
+    
+}
+void
+orchestrator::CTRL_connected(){
+    
+}
+void
+orchestrator::CTRL_disconnected(){
+    
+}
+
+
+void orchestrator::OUI_set_port_behavior(cofdpt* dpt){
     std::map<uint32_t, cofport*>::iterator port_it;
     std::map<uint32_t, cofport*> portlist= dpt->get_ports();
     for (port_it = portlist.begin(); port_it != portlist.end(); ++port_it) {

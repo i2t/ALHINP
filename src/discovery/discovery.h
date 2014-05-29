@@ -9,11 +9,13 @@
 #define	DISCOVERY_H
 #define __STDC_FORMAT_MACROS
 
-using namespace rofl;
+
 
 #include <stdint.h>
 #include <rofl/common/crofbase.h>
 #include <rofl/common/openflow/cofdpt.h>
+
+using namespace rofl;
 
 class ALHINP;
 class discovery {
@@ -26,7 +28,7 @@ public:
     bool is_hidden_port(uint32_t portid);
     bool OUI_is_hidden_port(uint32_t portid);
     
-    void detect_CM();
+    void detect_CM(cofdpt* dpt);
 
 private:
     

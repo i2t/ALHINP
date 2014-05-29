@@ -7,6 +7,10 @@
 
 #ifndef ORCHESTRATOR_H
 #define	ORCHESTRATOR_H
+
+#include <rofl/common/openflow/cofdpt.h>
+
+
 using namespace rofl;
 class ALHINP;
 class orchestrator {
@@ -18,7 +22,7 @@ public:
     orchestrator(const orchestrator& orig);
     virtual ~orchestrator();
 
-    void OUI_connected();
+    //void OUI_connected(cofdpt* dpt);
     void OUI_disconnected();
     void AGS_connected(cofdpt* dpt);
     void AGS_disconnected(cofdpt* dpt);    
