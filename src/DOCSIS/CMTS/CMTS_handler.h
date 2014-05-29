@@ -13,7 +13,7 @@ class CMTS_handler {
 public:
     CMTS_handler();
     CMTS_handler(const CMTS_handler& orig);
-    void assign_vlan(char* mac,uint16_t vlan_vid,uint8_t interface);
+    void L2VPN_enable(char* mac,uint16_t vlan_vid,uint8_t interface);
     virtual ~CMTS_handler();
 private:
 

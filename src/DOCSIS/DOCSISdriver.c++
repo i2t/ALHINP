@@ -15,4 +15,8 @@ DOCSISdriver::DOCSISdriver(const DOCSISdriver& orig) {
 
 DOCSISdriver::~DOCSISdriver() {
 }
-
+int
+DOCSISdriver::enable_L2VPN(char* mac,uint16_t vlan) {
+    cisco.L2VPN_enable(mac,vlan,1);
+    return 1;
+}

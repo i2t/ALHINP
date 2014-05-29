@@ -31,6 +31,8 @@ public:
     void OUI_set_port_behavior(cofdpt* dpt);
     void CTRL_disconnected();
     void CTRL_connected();
+    
+    void dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg);
 
 
 };

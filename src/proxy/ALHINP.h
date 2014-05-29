@@ -16,6 +16,7 @@
 #include <rofl/common/crofbase.h>
 #include "../orchestrator/orchestrator.h"
 #include "../discovery/discovery.h"
+#include "../DOCSIS/DOCSISdriver.h"
 
 #include <list>
 
@@ -33,6 +34,7 @@ private:
     discovery* discover;
     orchestrator* manager; 
     cofctl* controller;
+    DOCSISdriver docsis;
     
 public:
     ALHINP();

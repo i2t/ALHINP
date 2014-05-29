@@ -8,12 +8,15 @@
 #ifndef DOCSISDRIVER_H
 #define	DOCSISDRIVER_H
 
+#include "CMTS/CMTS_handler.h"
+
 class DOCSISdriver {
+    CMTS_handler cisco;
 public:
     DOCSISdriver();
     DOCSISdriver(const DOCSISdriver& orig);
     virtual ~DOCSISdriver();
-private:
+    int enable_L2VPN(char* mac,uint16_t vlan);
 
 };
 

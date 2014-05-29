@@ -66,5 +66,6 @@ ALHINP::handle_ctrl_close(cofctl *ctl){
 void
 ALHINP::handle_packet_in(cofdpt *dpt, cofmsg_packet_in *msg){
     
+    manager->dispath_PACKET_IN(dpt,msg);
 }
 

@@ -29,7 +29,7 @@ CMTS_handler::CMTS_handler(const CMTS_handler& orig) {
 CMTS_handler::~CMTS_handler() {
 }
 
-void CMTS_handler::assign_vlan(char* mac,uint16_t vlan_vid,uint8_t interface){
+void CMTS_handler::L2VPN_enable(char* mac,uint16_t vlan_vid,uint8_t interface){
 
     std::string string2;
     string2 = mac;
@@ -52,9 +52,9 @@ void CMTS_handler::assign_vlan(char* mac,uint16_t vlan_vid,uint8_t interface){
     command.append(convert.str());
     command.append(" &");
 
-    std::cout <<command << "\n";
+    std::cout <<"Command over CMTS: "<<command << "\n";
     
     
-    int result =system(command.c_str());
+    //int result =system(command.c_str());
 
 }
