@@ -7,19 +7,24 @@
 
 #ifndef ORCHESTRATOR_H
 #define	ORCHESTRATOR_H
-
+using namespace rofl;
+class ALHINP;
 class orchestrator {
-
+    ALHINP *proxy;
 private:
-    
+
 public:
-    orchestrator();
+    orchestrator(ALHINP *ofproxy);
     orchestrator(const orchestrator& orig);
     virtual ~orchestrator();
-    void AGS_connected();
-    void AGS_disconnected();
+
     void OUI_connected();
     void OUI_disconnected();
+    void AGS_connected(cofdpt* dpt);
+    void AGS_disconnected(cofdpt* dpt);    
+    void AGS_reset_flows(cofdpt* dpt);
+    void AGS_set_port_behavior(cofdpt* dpt);
+    void OUI_set_port_behavior(cofdpt* dpt);
     void CTRL_disconnected();
     void CTRL_connected();
 

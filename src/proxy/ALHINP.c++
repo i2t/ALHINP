@@ -11,12 +11,7 @@
 #include <rofl/common/openflow/coxmatch.h>
 #include <list>
 
-#define CONTROLLER_IP "158.227.98.5"
-#define CONTROLLER_OF "1.0"
-#define CONTROLLER_PORT "6633"
-#define OF_LISTEN_PORT "6633"
-#define AGGR_LISTEN_IP "158.227.98.21"
-#define OUI_LISTEN_IP "158.227.98.6"
+
 
 
 
@@ -25,7 +20,8 @@ using namespace rofl;
 ALHINP::ALHINP()
 {
     //listen for OUI
-    network= new discovery(this);
+    discover= new discovery(this);
+    manager= new orchestrator(this);
     rpc_listen_for_dpts(caddress(AF_INET, "158.227.98.21", 6633));
     //listen for AGG
     //rpc_listen_for_dpts(caddress(AF_INET, "158.227.98.21", 6633));
@@ -40,26 +36,25 @@ ALHINP::~ALHINP() {
 }
 void
 ALHINP::handle_dpath_open(cofdpt* dpt){
-    if(network->is_aggregator(dpt->get_dpid())){
+    if(discover->is_aggregator(dpt->get_dpid())){
         //AGS connected
-        network->AGS_connected(dpt);
-        send_barrier_request(ALHINP::dpt_find((uint64_t)1));;
+        manager->AGS_connected(dpt);
         
     }else{
         //An OUI is connected
-        manager.OUI_connected();
+        manager->OUI_connected();
     }
 
 }
 void
 ALHINP::handle_dpath_close(cofdpt* dpt){
-    if(network->is_aggregator(dpt->get_dpid())){
+    if(discover->is_aggregator(dpt->get_dpid())){
         //AGS connected
-        network->AGS_disconnected();
+        manager->AGS_disconnected(dpt);
         
     }else{
         //An OUI is connected
-        manager.OUI_disconnected();
+        manager->OUI_disconnected();
     }    
 }
 void
@@ -83,11 +78,4 @@ void ALHINP::send_packet_in_ctrl(uint32_t buffer_id, uint16_t total_len,uint8_t 
         std::cout<<"[WARNING]:Dropping PACKET_IN, no controller connected\n";
     }
    
-}
-void ALHINP::install_flowentry(){
-    
-}
-void ALHINP::sendbarrier(uint64_t dpid){
-    std::cout<<"HOOOLA\n";
-    
 }

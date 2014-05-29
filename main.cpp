@@ -12,10 +12,6 @@
 #include <rofl/common/ciosrv.h>
 #include "src/proxy/ALHINP.h"
 
-#define CONTROLLER_IP "10.98.1.33"
-#define CONTROLLER_PORT 6633
-#define MAX_RETRY 10
-
 using namespace rofl;
 
 //Handler to stop ciosrv
@@ -50,7 +46,7 @@ int main(int argc, char** argv){
         rofl::ciosrv::init();
         
         
-        ALHINP proxy;
+        ALHINP ofdocsis;
 
         //ciosrv run. Only will stop in Ctrl+C
 	rofl::ciosrv::run();

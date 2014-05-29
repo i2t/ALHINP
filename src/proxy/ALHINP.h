@@ -21,20 +21,24 @@
 
 using namespace rofl;
 
+//class discovery;
+//class orchestrator;
 class ALHINP : public crofbase {
     
     friend orchestrator;
+    friend discovery;
     
 private:
     
-    discovery network;
-    orchestrator manager; 
+    discovery* discover;
+    orchestrator* manager; 
     cofctl* controller;
     
 public:
     ALHINP();
     ALHINP(const ALHINP& orig);
     virtual ~ALHINP();
+    void install_flowentry();
     
 private:
 
@@ -44,6 +48,7 @@ private:
     virtual void handle_dpath_close(cofdpt *dpt);
     virtual void handle_ctrl_open(cofctl *ctl);
     virtual void handle_ctrl_close(cofctl *ctl);
+    void sendbarrier(uint64_t dpid);
 //  
 //    //SOUTHBOUND INTERFACE
 //    virtual void handle_aggregate_stats_reply(cofdpt* dpt, cofmsg_aggr_stats_reply* msg);
