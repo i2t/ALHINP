@@ -17,9 +17,11 @@
 #define C_TAG 0x8100
 #define S_TAG 0x88A8
 
+
+
 discovery::discovery(ALHINP *proxye) {
     proxy=proxye;
-    VLAN_index=1;
+    VLAN_index=VLAN_START;
 }
 
 discovery::discovery(const discovery& orig) {
@@ -42,8 +44,8 @@ discovery::detect_CM(cofdpt* dpt){
         dhcp_req.set_idle_timeout(0);
         dhcp_req.set_hard_timeout(0);
         dhcp_req.set_table_id(0);
-        dhcp_req.set_cookie(cookie_mask);
-        dhcp_req.set_cookie_mask(cookie_mask);
+        dhcp_req.set_cookie(cookiemask);
+        dhcp_req.set_cookie_mask(cookiemask);
         dhcp_req.set_flags(0);
         dhcp_req.set_priority(3);
         dhcp_req.match.set_in_port(CMTS_PORT);
@@ -63,8 +65,8 @@ discovery::detect_DPS_traffic(cofdpt* dpt){
         fe_provisioning.set_idle_timeout(0);
         fe_provisioning.set_hard_timeout(0);
         fe_provisioning.set_table_id(0);
-        fe_provisioning.set_cookie(cookie_mask);
-        fe_provisioning.set_cookie_mask(cookie_mask);
+        fe_provisioning.set_cookie(cookiemask);
+        fe_provisioning.set_cookie_mask(cookiemask);
         fe_provisioning.set_flags(0);
         fe_provisioning.set_priority(2);
         fe_provisioning.match.set_in_port(CMTS_PORT);
@@ -77,8 +79,8 @@ discovery::detect_DPS_traffic(cofdpt* dpt){
         fe_provisioning2.set_idle_timeout(0);
         fe_provisioning2.set_hard_timeout(0);
         fe_provisioning2.set_table_id(0);
-        fe_provisioning2.set_cookie(cookie_mask);
-        fe_provisioning2.set_cookie_mask(cookie_mask);
+        fe_provisioning2.set_cookie(cookiemask);
+        fe_provisioning2.set_cookie_mask(cookiemask);
         fe_provisioning2.set_flags(0);
         fe_provisioning2.set_priority(2);
         fe_provisioning2.match.set_in_port(DPS_PORT);
@@ -91,8 +93,8 @@ discovery::detect_DPS_traffic(cofdpt* dpt){
         fe_provisioning3.set_idle_timeout(0);
         fe_provisioning3.set_hard_timeout(0);
         fe_provisioning3.set_table_id(0);
-        fe_provisioning3.set_cookie(cookie_mask);
-        fe_provisioning3.set_cookie_mask(cookie_mask);
+        fe_provisioning3.set_cookie(cookiemask);
+        fe_provisioning3.set_cookie_mask(cookiemask);
         fe_provisioning3.set_flags(0);
         fe_provisioning3.set_priority(5);
         fe_provisioning3.match.set_in_port(CMTS_PORT);
@@ -108,8 +110,8 @@ discovery::detect_OUI_control_traffic(cofdpt* dpt){
         fe.set_idle_timeout(0);
         fe.set_hard_timeout(0);
         fe.set_table_id(0);
-        fe.set_cookie(cookie_mask);
-        fe.set_cookie_mask(cookie_mask);
+        fe.set_cookie(cookiemask);
+        fe.set_cookie_mask(cookiemask);
         fe.set_flags(0);
         fe.set_priority(2);
         fe.match.set_in_port(CMTS_PORT);
@@ -120,11 +122,25 @@ discovery::detect_OUI_control_traffic(cofdpt* dpt){
     proxy->send_flow_mod_message(dpt,fe); 
 }
 bool
-discovery::is_hidden_port(uint32_t portid){
-    if(portid==CMTS_PORT ||portid==DPS_PORT || portid==PROXY_PORT)
-        return true;
-    else
-        return false;
+discovery::is_hidden_port(uint64_t dpid, uint32_t portid){
+    std::cout<< portid << "\n";
+    if(dpid==AGG_DPID){
+        if(portid==CMTS_PORT ||portid==DPS_PORT || portid==PROXY_PORT){
+            std::cout<<"hidden YES\n";
+            fflush(stdout);
+            return true;
+        }else{
+            std::cout<<"hidden FALSE\n";
+            fflush(stdout);
+            return false;
+        }
+    }else{
+        if(portid==OUI_NETPORT)
+            return true;
+        else
+            return false;
+    }
+        
 }
 bool
 discovery::OUI_is_hidden_port(uint32_t portid){
@@ -151,7 +167,8 @@ discovery::register_CM(uint64_t mac){
 }
 void 
 discovery::AGS_enable_OUI_traffic(cofdpt* dpt,uint64_t mac, uint16_t vlan){
-        //proxy.translator.insert_mac_vlan(mac.get_mac(),vlan);
+    
+    proxy->virtualizer.insert_mac_vlan(mac,vlan);
         
     cflowentry fe_up(0x03); 
         fe_up.set_command(OFPFC_ADD);
@@ -159,8 +176,8 @@ discovery::AGS_enable_OUI_traffic(cofdpt* dpt,uint64_t mac, uint16_t vlan){
         fe_up.set_idle_timeout(0);
         fe_up.set_hard_timeout(0);
         fe_up.set_table_id(0);
-        fe_up.set_cookie(cookie_mask);
-        fe_up.set_cookie_mask(cookie_mask);
+        fe_up.set_cookie(cookiemask);
+        fe_up.set_cookie_mask(cookiemask);
         fe_up.set_flags(0);
         fe_up.set_priority(5);
 
@@ -178,8 +195,8 @@ discovery::AGS_enable_OUI_traffic(cofdpt* dpt,uint64_t mac, uint16_t vlan){
         fe_down.set_idle_timeout(0);
         fe_down.set_hard_timeout(0);
         fe_down.set_table_id(0);
-        fe_down.set_cookie(cookie_mask);
-        fe_down.set_cookie_mask(cookie_mask);
+        fe_down.set_cookie(cookiemask);
+        fe_down.set_cookie_mask(cookiemask);
         fe_down.set_flags(0);
         fe_down.set_priority(5);
         fe_down.match.set_in_port(PROXY_PORT);
@@ -196,8 +213,8 @@ discovery::AGS_enable_OUI_traffic(cofdpt* dpt,uint64_t mac, uint16_t vlan){
         fe_data.set_idle_timeout(0);
         fe_data.set_hard_timeout(0);
         fe_data.set_table_id(0);
-        fe_data.set_cookie(cookie_mask);
-        fe_data.set_cookie_mask(cookie_mask);
+        fe_data.set_cookie(cookiemask);
+        fe_data.set_cookie_mask(cookiemask);
         fe_data.set_flags(0);
         fe_data.set_priority(4);
         fe_data.match.set_in_port(CMTS_PORT);

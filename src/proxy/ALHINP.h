@@ -35,7 +35,7 @@ private:
     orchestrator* manager; 
     cofctl* controller;
     DOCSISdriver docsis;
-    
+    translator virtualizer;   
 public:
     ALHINP();
     ALHINP(const ALHINP& orig);
@@ -59,14 +59,14 @@ private:
 //
 //    virtual void handle_desc_stats_reply (cofdpt *dpt, cofmsg_desc_stats_reply *msg);
 //    virtual void handle_error (cofdpt *dpt, cofmsg_error *msg);
-//    virtual void handle_features_reply(cofdpt *dpt, cofmsg_features_reply *msg);
+    virtual void handle_features_reply(cofdpt *dpt, cofmsg_features_reply *msg);
 //    virtual void handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg);
 //
 //    virtual void handle_flow_stats_reply (cofdpt *dpt, cofmsg_flow_stats_reply *msg);
-//    virtual void handle_get_config_reply (cofdpt *dpt, cofmsg_get_config_reply *msg);
+    virtual void handle_get_config_reply (cofdpt *dpt, cofmsg_get_config_reply *msg);
     virtual void handle_packet_in(cofdpt *dpt, cofmsg_packet_in *msg);
 //    virtual void handle_port_stats_reply (cofdpt *dpt, cofmsg_port_stats_reply *msg);
-//    virtual void handle_port_status (cofdpt *dpt, cofmsg_port_status *msg);
+    virtual void handle_port_status (cofdpt *dpt, cofmsg_port_status *msg);
 //    virtual void handle_queue_get_config_reply (cofdpt *dpt, cofmsg_queue_get_config_reply *msg);
 //    virtual void handle_stats_reply (cofdpt *dpt, cofmsg_stats_reply *msg);
 //    virtual void handle_table_stats_reply (cofdpt *dpt, cofmsg_table_stats_reply *msg);
@@ -78,9 +78,9 @@ private:
 //    virtual void handle_barrier_request (cofctl *ctl, cofmsg_barrier_request *msg);
 //    virtual void handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg);
 //    virtual void handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg);
-//    virtual void handle_get_config_request (cofctl *ctl, cofmsg_get_config_request *msg);
+    virtual void handle_get_config_request (cofctl *ctl, cofmsg_get_config_request *msg);
 //    virtual void handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg);
-//    virtual void handle_port_mod (cofctl *ctl, cofmsg_port_mod *msg);
+    virtual void handle_port_mod (cofctl *ctl, cofmsg_port_mod *msg);
 //    virtual void handle_queue_get_config_request (cofctl *ctl, cofmsg_queue_get_config_request *msg);
 //    virtual void handle_role_request (cofctl *ctl, cofmsg_role_request *msg);
 //    virtual void handle_table_mod (cofctl *ctl, cofmsg_table_mod *msg);

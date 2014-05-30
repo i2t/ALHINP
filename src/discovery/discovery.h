@@ -43,9 +43,11 @@
 
 #define OUI_NETPORT 2
 #define OUI_USERPORT 1
-//
-#define cookie_mask 0x8000000000000000ULL
+
+#define VLAN_START 2
+
 #define flow_mask   0x7FFFFFFFFFFFFFFFULL
+#define cookiemask 0x8000000000000000ULL
 
 using namespace rofl;
 
@@ -64,7 +66,7 @@ public:
     discovery(const discovery& orig);
     virtual ~discovery();
     bool is_aggregator(uint64_t dpid);
-    bool is_hidden_port(uint32_t portid);
+    bool is_hidden_port(uint64_t dpid, uint32_t portid);
     bool OUI_is_hidden_port(uint32_t portid);
     
     void detect_CM(cofdpt* dpt);
