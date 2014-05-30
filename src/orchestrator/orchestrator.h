@@ -11,7 +11,21 @@
 #include <rofl/common/openflow/cofdpt.h>
 #include "../translator/translator.h"
 
+struct flow_mod_constants {
+    uint64_t                cookie;
+    uint16_t                idle_timeout;
+    uint16_t                hard_timeout;
+    uint16_t                priority;
+    uint16_t                buffer_id;
+    uint16_t                flags;
 
+};
+struct flowentry{
+    cofmatch match;
+    cofinlist instrlist;
+    flow_mod_constants constants;
+};
+    
 using namespace rofl;
 class ALHINP;
 class orchestrator {
@@ -40,11 +54,19 @@ public:
     void CTRL_disconnected();
     void CTRL_connected();
     
+    void handle_timeout(int opaque); 
+    
     void dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg);
     void handle_features_reply(cofdpt* dpt, cofmsg_features_reply* msg);
     void handle_port_status(cofdpt* dpt, cofmsg_port_status* msg);
     void handle_port_mod (cofctl *ctl, cofmsg_port_mod *msg);
     void handle_get_config_request(cofctl* ctl, cofmsg_get_config_request* msg);
+    void handle_set_config (cofctl *ctl, cofmsg_set_config *msg);
+    void handle_features_request (cofctl *ctl, cofmsg_features_request *msg);
+    void flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg);
+    void flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow_mod_constants *constants, uint32_t inport, uint32_t outport);
+
+
 };
 
 #endif	/* ORCHESTRATOR_H */

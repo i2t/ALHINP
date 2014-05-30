@@ -15,7 +15,7 @@
 #include <rofl/common/crofbase.h>
 #include <rofl/common/openflow/cofdpt.h>
 
-
+#define ALHINP_DPID 0xfffffffff
 
 #define FEATURES_REQ 0x45678
 #define FEATURES_REQ_TIMER 3

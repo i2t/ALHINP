@@ -61,6 +61,10 @@ void ALHINP::handle_ctrl_close(cofctl *ctl){
     std::cout<<"[WARNING]: Controller disconnected\n";
 }
 
+void ALHINP::handle_timeout(int opaque){
+    manager->handle_timeout(opaque);
+}
+
 void ALHINP::handle_packet_in(cofdpt *dpt, cofmsg_packet_in *msg){
     
     manager->dispath_PACKET_IN(dpt,msg);
@@ -82,5 +86,40 @@ void ALHINP::handle_port_mod (cofctl *ctl, cofmsg_port_mod *msg){
     manager->handle_port_mod (ctl, msg);
 } 
 void ALHINP::handle_get_config_request(cofctl* ctl, cofmsg_get_config_request* msg){
-    manager->handle_get_config_request (cofctl *ctl, cofmsg_get_config_request *msg);
+    manager->handle_get_config_request (ctl,msg);
 }
+void ALHINP::handle_set_config (cofctl *ctl, cofmsg_set_config *msg){
+    manager->handle_set_config (ctl, msg);
+}
+
+void ALHINP::handle_features_request (cofctl *ctl, cofmsg_features_request *msg){
+    manager->handle_features_request (ctl,msg);
+}
+void ALHINP::handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg){
+    switch (msg->get_command()) {
+        case OFPFC_ADD: {
+                manager->flow_mod_add(ctl, msg);
+                } break;
+
+        case OFPFC_MODIFY: {
+                       // flow_mod_modify(ctl, msg, false);
+                } break;
+
+        case OFPFC_MODIFY_STRICT: {
+                       //flow_mod_modify(ctl, msg, true);
+                } break;
+
+        case OFPFC_DELETE: {
+                //manager->flow_mod_delete(ctl, msg, true);
+                } break;
+
+        case OFPFC_DELETE_STRICT: {
+                       //flow_mod_delete(ctl, msg, true);
+                } break;
+
+        default:
+                throw eFlowModBadCommand();
+    }
+    delete msg;
+    return;
+}  

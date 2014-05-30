@@ -47,8 +47,7 @@ public:
     uint32_t get_real_port_id(uint32_t virtualport);
     uint32_t get_virtual_port_id(uint64_t dpid, uint32_t realport);
     void     enable_port (uint64_t dpid, uint32_t realport);
-    uint64_t get_own_dpid(uint32_t virtualport ){
-        return(portmap [virtualport].datap);}
+    uint64_t get_own_dpid(uint32_t virtualport ){return(portmap [virtualport].datap);}
 };
 
 #endif	/* TRANSLATOR_H */
