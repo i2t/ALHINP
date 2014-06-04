@@ -123,15 +123,15 @@ discovery::detect_OUI_control_traffic(cofdpt* dpt){
 }
 bool
 discovery::is_hidden_port(uint64_t dpid, uint32_t portid){
-    std::cout<< portid << "\n";
+    //std::cout<< portid << "\n";
     if(dpid==AGG_DPID){
         if(portid==CMTS_PORT ||portid==DPS_PORT || portid==PROXY_PORT){
-            std::cout<<"hidden YES\n";
-            fflush(stdout);
+            //std::cout<<"hidden YES\n";
+            //fflush(stdout);
             return true;
         }else{
-            std::cout<<"hidden FALSE\n";
-            fflush(stdout);
+            //std::cout<<"hidden FALSE\n";
+            //fflush(stdout);
             return false;
         }
     }else{

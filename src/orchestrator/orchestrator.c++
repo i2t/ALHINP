@@ -291,7 +291,6 @@ void orchestrator::handle_features_reply(cofdpt* dpt, cofmsg_features_reply* msg
             //std::cout<<(*port_it).get_port_no()<<"paso por aqui\n";
             cofport port = *(port_it);
             if(!proxy->discover->is_hidden_port(dpt->get_dpid(),port.get_port_no())){ //No announce Emulator ports
-                std::cout<<"testpointA\n";
                 proxy->virtualizer.enable_port(dpt->get_dpid(),port.get_port_no());
                 uint32_t portnum= proxy->virtualizer.get_virtual_port_id(dpt->get_dpid(),port.get_port_no());
                 port.set_port_no(portnum);
@@ -512,43 +511,43 @@ void orchestrator::flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg){
         //Openflow 1.0 Match parsing
         try{
             virtual_inport=(uint32_t)msg->get_match().get_in_port();
-            std::cout<<"in_port_not_wildcarded: " << msg->get_match().get_in_port()<<"\n";
+            //std::cout<<"in_port_not_wildcarded: " << msg->get_match().get_in_port()<<"\n";
         }catch(eOFmatchNotFound& e){}   
         
         try{ //OF 1.0
             common_match.set_eth_type(msg->get_match().get_eth_type());
-            std::cout<<"Ethtype_not_wildcarded: "<<msg->get_match().get_eth_type()<<"\n";
+            //std::cout<<"Ethtype_not_wildcarded: "<<msg->get_match().get_eth_type()<<"\n";
         }catch(eOFmatchNotFound& e){}
 
         try{ //OF 1.0
         if(msg->get_match().get_eth_src_addr().get_mac()!=0){ //ETH_SRC
             common_match.set_eth_src(msg->get_match().get_eth_src_addr());
-            std::cout<<"dl_src_not_wildcarded: "<<msg->get_match().get_eth_src_addr().c_str()<<"\n";
+            //std::cout<<"dl_src_not_wildcarded: "<<msg->get_match().get_eth_src_addr().c_str()<<"\n";
         }
         }catch(eOFmatchNotFound& e){}
 
         try{ //OF 1.0
         if(msg->get_match().get_eth_dst_addr().get_mac()!=0){ //ETH_SRC
             common_match.set_eth_dst(msg->get_match().get_eth_dst_addr());
-            std::cout<<"dl_dst_not_wildcarded: "<<msg->get_match().get_eth_dst_addr().c_str()<<"\n";
+            //std::cout<<"dl_dst_not_wildcarded: "<<msg->get_match().get_eth_dst_addr().c_str()<<"\n";
         }            
         }catch(eOFmatchNotFound& e){}
         
         try{ //OF 1.0
             common_match.set_vlan_vid(msg->get_match().get_vlan_vid());
-            std::cout<<"vid_not_wildcarded: "<<msg->get_match().get_vlan_vid()<<"\n";
+            //std::cout<<"vid_not_wildcarded: "<<msg->get_match().get_vlan_vid()<<"\n";
 
         }catch(eOFmatchNotFound& e){}
 
         try{ //OF 1.0
             common_match.set_vlan_pcp(msg->get_match().get_vlan_pcp());
-            std::cout<<"pcp_not_wildcarded: "<<(uint32_t)msg->get_match().get_vlan_pcp()<<"\n";
+            //std::cout<<"pcp_not_wildcarded: "<<(uint32_t)msg->get_match().get_vlan_pcp()<<"\n";
         }catch(eOFmatchNotFound& e){}
 
         try{ //OF 1.0
             if(msg->get_match().get_nw_dst_value().get_ipv4_addr()!=0){
             common_match.set_ipv4_dst(msg->get_match().get_nw_dst_value());
-            std::cout<<"nw_dst_not_wildcarded: "<<msg->get_match().get_nw_dst_value().addr_c_str()<<"\n";
+            //std::cout<<"nw_dst_not_wildcarded: "<<msg->get_match().get_nw_dst_value().addr_c_str()<<"\n";
             }
 
         }catch(eOFmatchNotFound& e){}
@@ -557,44 +556,47 @@ void orchestrator::flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg){
             if(msg->get_match().get_nw_dst_value().get_ipv4_addr()!=0){
                 //caddr ip_src();
             common_match.set_ipv4_src(msg->get_match().get_nw_src_value());
-            std::cout<<"nw_src_not_wildcarded: "<<msg->get_match().get_nw_src_value().addr_c_str()<<"\n";
+            //std::cout<<"nw_src_not_wildcarded: "<<msg->get_match().get_nw_src_value().addr_c_str()<<"\n";
             }
         }catch(eOFmatchNotFound& e){}
         
         try{
             common_match.set_ip_proto(msg->get_match().get_nw_proto());
-            std::cout<<"ip_proto_not_wildcarded: "<<msg->get_match().get_ip_proto()<<"\n";
+            //std::cout<<"ip_proto_not_wildcarded: "<<msg->get_match().get_ip_proto()<<"\n";
+            if(msg->get_match().get_nw_proto()==6){
             try{
                     try{
-                        std::cout<<"TCP_SRC_not_wildcarded: "<<msg->get_match().get_tp_src()<<"\n";
+                        //std::cout<<"TCP_SRC_not_wildcarded: "<<msg->get_match().get_tp_src()<<"\n";
                         common_match.set_tcp_src(msg->get_match().get_tp_src());
 
 
                     }catch(eOFmatchNotFound& e){}
                     try{
                         common_match.set_tcp_dst(msg->get_match().get_tp_dst());
-                        std::cout<<"TCP_DST_not_wildcarded: "<<msg->get_match().get_tp_dst()<<"\n";
+                        //std::cout<<"TCP_DST_not_wildcarded: "<<msg->get_match().get_tp_dst()<<"\n";
 
                     }catch(eOFmatchNotFound& e){}
             }catch(eOFmatchNotFound& e){}
-            
+            }
+            if(msg->get_match().get_nw_proto()==17){
             try{
                 try{
                     common_match.set_udp_src(msg->get_match().get_tp_src());
-                    std::cout<<"UDP_SRC_not_wildcarded: "<<msg->get_match().get_tp_src()<<"\n";
+                    //std::cout<<"UDP_SRC_not_wildcarded: "<<msg->get_match().get_tp_src()<<"\n";
 
                 }catch(eOFmatchNotFound& e){}
                 try{
                     common_match.set_udp_dst(msg->get_match().get_tp_dst());
-                    std::cout<<"UDP_src_not_wildcarded: "<<msg->get_match().get_tp_dst()<<"\n";
+                    //std::cout<<"UDP_src_not_wildcarded: "<<msg->get_match().get_tp_dst()<<"\n";
 
                 }catch(eOFmatchNotFound& e){}
-            }catch(eOFmatchNotFound& e){}            
+            }catch(eOFmatchNotFound& e){} 
+            }
         }catch(eOFmatchNotFound& e){} 
     }
     //OF MATCH PROCESSED !! :)
     // Let's walk into actions
-    cofinlist instrlist;
+    cofinlist instrlist (OFP12_VERSION);
     cofaclist::iterator it;
     bool lastoutput;
     if (ofversion==OFP10_VERSION){
@@ -604,21 +606,22 @@ void orchestrator::flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg){
             lastoutput=false;
             try{
                 switch (htobe16((*it).oac_oacu.oacu_header->type)) {
-                    std::cout<<"case: " <<(*it).oac_oacu.oacu_header->type<<"\n";
+                    //std::cout<<"case: " <<(*it).oac_oacu.oacu_header->type<<"\n";
                     case OFP10AT_OUTPUT:{ //overwrite corresponding virtual port w/ real port
-                        std::cout<<"SET_OUTPORT: "<< (uint16_t)htobe16((*it).oac_oacu.oacu_10output->port) <<"\n";
+                        //std::cout<<"SET_OUTPORT: "<< (uint16_t)htobe16((*it).oac_oacu.oacu_10output->port) <<"\n";
                         //Time to generate rules and form FlowMods
-                        flow_mod_generator(common_match, instrlist, constants, virtual_inport, (uint16_t)htobe16((*it).oac_oacu.oacu_10output->port));
                         lastoutput=true;
+                        flow_mod_generator(common_match, instrlist, constants, virtual_inport, (uint32_t)htobe16((*it).oac_oacu.oacu_10output->port));
+                        
                     }break;
                     case OFP10AT_SET_VLAN_VID:{
-                        std::cout<<"SET_VLAN_VID: "<< htobe16((*it).oac_oacu.oacu_10vlanvid->vlan_vid) <<"\n";
+                        //std::cout<<"SET_VLAN_VID: "<< htobe16((*it).oac_oacu.oacu_10vlanvid->vlan_vid) <<"\n";
                         instrlist.back().actions.next() = cofaction_push_vlan(OFP12_VERSION,C_TAG); 
                         instrlist.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_vlan_vid (OFPVID_PRESENT|htobe16((*it).oac_oacu.oacu_10vlanvid->vlan_vid)));
                         break;
                     }
                     case OFP10AT_SET_VLAN_PCP:{
-                        std::cout<<"SET_VLAN_PCP: "<< (*it).oac_oacu.oacu_10vlanpcp->vlan_pcp <<"\n";
+                        //std::cout<<"SET_VLAN_PCP: "<< (*it).oac_oacu.oacu_10vlanpcp->vlan_pcp <<"\n";
                         instrlist.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_vlan_pcp ((*it).oac_oacu.oacu_10vlanpcp->vlan_pcp));
                         break;
                     }
@@ -628,38 +631,38 @@ void orchestrator::flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg){
                     }
                     case OFP10AT_SET_DL_SRC:{
                         cmacaddr mac_dl_src((*it).oac_oacu.oacu_10dladdr->dl_addr,6);
-                        std::cout<<"SET_MAC_SRC: "<< mac_dl_src.c_str()<<"\n";
+                        //std::cout<<"SET_MAC_SRC: "<< mac_dl_src.c_str()<<"\n";
                         instrlist.back().actions.next()= cofaction_set_field(OFP12_VERSION,coxmatch_ofb_eth_src(mac_dl_src));
                         break;
                     }
                     case OFP10AT_SET_DL_DST:{
                         cmacaddr mac_dl_dst((*it).oac_oacu.oacu_10dladdr->dl_addr,6);
-                        std::cout<<"SET_MAC_DST: "<< mac_dl_dst.c_str()<<"\n";
+                        //std::cout<<"SET_MAC_DST: "<< mac_dl_dst.c_str()<<"\n";
                         instrlist.back().actions.next()= cofaction_set_field(OFP12_VERSION,coxmatch_ofb_eth_dst(mac_dl_dst));
                         break;
                     }
                     case OFP10AT_SET_NW_SRC:{
                         caddress ip_src(AF_INET);
                         ip_src.set_ipv4_addr(htobe32((*it).oac_oacu.oacu_10nwaddr->nw_addr));
-                        std::cout<<"SET_IP_SRC "<<ip_src.addr_c_str() <<"\n";
+                        //std::cout<<"SET_IP_SRC "<<ip_src.addr_c_str() <<"\n";
                         instrlist.back().actions.next()= cofaction_set_field(OFP12_VERSION,coxmatch_ofb_ipv4_src(ip_src));                        
                         break;
                     }
                     case OFP10AT_SET_NW_DST:{
                         caddress ip_dst(AF_INET);
                         ip_dst.set_ipv4_addr(htobe32((*it).oac_oacu.oacu_10nwaddr->nw_addr));
-                        std::cout<<"SET_IP_DST "<< ip_dst.addr_c_str() <<"\n";
+                        //std::cout<<"SET_IP_DST "<< ip_dst.addr_c_str() <<"\n";
                         instrlist.back().actions.next()= cofaction_set_field(OFP12_VERSION,coxmatch_ofb_ipv4_dst(ip_dst));
                         break;
                     }                                         
                     case OFP10AT_SET_NW_TOS:{
-                        std::cout<< "SET_NW_TOS: "<<(uint32_t)(*it).oac_oacu.oacu_10nwtos->nw_tos<<"\n";
+                        //std::cout<< "SET_NW_TOS: "<<(uint32_t)(*it).oac_oacu.oacu_10nwtos->nw_tos<<"\n";
                         instrlist.back().actions.next()= cofaction_set_field(OFP12_VERSION,coxmatch_ofb_ip_ecn((*it).oac_oacu.oacu_10nwtos->nw_tos));
                         instrlist.back().actions.next()= cofaction_set_field(OFP12_VERSION,coxmatch_ofb_ip_dscp((*it).oac_oacu.oacu_10nwtos->nw_tos));
                         break;
                     }
                     case OFP10AT_SET_TP_SRC:{
-                        std::cout<< "SET_TP_SRC "<<htobe16((*it).oac_oacu.oacu_10tpport->tp_port)<<"\n";
+                        //std::cout<< "SET_TP_SRC "<<htobe16((*it).oac_oacu.oacu_10tpport->tp_port)<<"\n";
                         if(common_match.get_ip_proto()==0x06)//TCP
                             instrlist.back().actions.next()= cofaction_set_field(OFP12_VERSION,coxmatch_ofb_tcp_src(htobe16((*it).oac_oacu.oacu_10tpport->tp_port)));
                         else
@@ -667,7 +670,7 @@ void orchestrator::flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg){
                         break;
                     }
                     case OFP10AT_SET_TP_DST:{
-                        std::cout<< "SET_TP_DST "<<htobe16((*it).oac_oacu.oacu_10tpport->tp_port)<<"\n";
+                        //std::cout<< "SET_TP_DST "<<htobe16((*it).oac_oacu.oacu_10tpport->tp_port)<<"\n";
                         if(common_match.get_ip_proto()==0x06)//TCP
                             instrlist.back().actions.next()= cofaction_set_field(OFP12_VERSION,coxmatch_ofb_tcp_dst(htobe16((*it).oac_oacu.oacu_10tpport->tp_port)));
                         else
@@ -675,7 +678,7 @@ void orchestrator::flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg){
                         break;
                     }
                     case OFP10AT_SET_BANDWIDTH:{
-                        std::cout<< "ACTIONS: SET_BANDWIDTH\n"<<(*it).oac_oacu.oacu_10setBW->bandwidth <<"\n";
+                        //std::cout<< "ACTIONS: SET_BANDWIDTH\n"<<(*it).oac_oacu.oacu_10setBW->bandwidth <<"\n";
                         break;
                     }
                     default:{
@@ -683,14 +686,15 @@ void orchestrator::flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg){
                     }
                 }
             }catch(...){
-                    throw eFlowModUnknown();
+                    //throw eFlowModUnknown();
             }
         }//END FOR
-        if(lastoutput=false){
+        if(lastoutput==false){
             //OUTPORT=NONE (DROP ACTION)
             flow_mod_generator(common_match, instrlist,constants, virtual_inport, 0);
         }
     }
+    std::cout<<"done\n";
     if(ofversion==OFP12_VERSION){
 //        cofinlist::iterator it2;
 //        
@@ -743,7 +747,8 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
         inport_wildcarded==true;
     }
     if(inport_wildcarded==false){//IN_PORT_FIXED
-        uint64_t src_dpid = proxy->virtualizer.get_own_dpid(inport);
+        uint64_t src_dpid;
+        src_dpid = proxy->virtualizer.get_own_dpid(inport);
         uint64_t dst_dpid;
         if(outport==OFPP10_IN_PORT || outport==OFPP10_CONTROLLER ||outport==OFPP10_NONE){
             dst_dpid = src_dpid;
@@ -775,7 +780,7 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 }
             }
         }
-        cflowentry flow(0x03);
+        cflowentry flow(OFP12_VERSION);
         
         switch(flow_type){
             case DOWNSTREAM://DOWNSTREAM FLOW PROCESSING
@@ -791,16 +796,21 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.set_flags(constants->flags);
                 flow.set_priority(constants->priority);
                 flow.set_buffer_id(constants->buffer_id);
+                
                 flow.set_table_id(1);
+                
                 flow.match=ofmatch;
                 flow.match.set_in_port(proxy->virtualizer.get_real_port_id(inport));
+                
                 flow.instructions=instrlist;
                 flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
                 flow.instructions.back().actions.next() = cofaction_push_vlan(OFP12_VERSION,C_TAG); 
                 flow.instructions.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_vlan_vid (OFPVID_PRESENT|proxy->virtualizer.get_vlan_tag(AGG_DPID,dst_dpid)));                                                         
                 flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,CMTS_PORT); 
-                    proxy->send_flow_mod_message(proxy->dpt_find(src_dpid),flow); 
-                
+ 
+                proxy->send_flow_mod_message(proxy->dpt_find(src_dpid),flow); 
+
+                    
                 flow.set_buffer_id(OFP_NO_BUFFER);
                 flow.set_table_id(0);
                 flow.match=ofmatch;
@@ -811,41 +821,43 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                     proxy->send_flow_mod_message(proxy->dpt_find(dst_dpid),flow);   
                 
                 break;
-            case UPSTREAM://UPSTREAM FLOW PROCESSING
-                //cflowentry flow(0x03);
-                std::cout<<"setting DOWNSTREAM flow\n";
+            case UPSTREAM: //UPSTREAM FLOW PROCESSING
+
+                std::cout<<"setting UPSTREAM flow\n";
                 flow.set_cookie(constants->cookie&flow_mask);
                 flow.set_cookie_mask(flow_mask);
                 flow.set_command(OFPFC_ADD);
                 flow.set_hard_timeout(constants->hard_timeout);
                 flow.set_idle_timeout(constants->idle_timeout);
                 flow.set_flags(constants->flags);
-                flow.set_priority(constants->priority);
-                
+                flow.set_priority(constants->priority);            
                 flow.set_buffer_id(constants->buffer_id);
+                
                 flow.set_table_id(0);
+           
                 flow.match=ofmatch;
                 flow.match.set_in_port(proxy->virtualizer.get_real_port_id(inport));
-                flow.instructions=instrlist;
-                flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
-                flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,OUI_NETPORT); 
-                    proxy->send_flow_mod_message(proxy->dpt_find(src_dpid),flow); 
                 
+                flow.instructions=instrlist;
+                flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,OUI_NETPORT); 
+
+                proxy->send_flow_mod_message(proxy->dpt_find(src_dpid),flow);
+
                 flow.set_buffer_id(OFP_NO_BUFFER);
                 flow.set_table_id(1);                
                 flow.match=ofmatch;
                 flow.match.set_in_port(CMTS_PORT);
-                //flow.match.set_vlan_vid(OFPVID_PRESENT|proxy->virtualizer.get_vlan_tag(src_dpid,dst_dpid));
                 flow.match.set_metadata(proxy->virtualizer.get_vlan_tag(src_dpid,dst_dpid));
+                
                 flow.instructions=instrlist;
-                flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
                 flow.instructions.back().actions.next() = cofaction_pop_vlan(OFP12_VERSION);
                 flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,proxy->virtualizer.get_real_port_id(outport)); 
-                    proxy->send_flow_mod_message(proxy->dpt_find(dst_dpid),flow);                  
+
+                proxy->send_flow_mod_message(proxy->dpt_find(dst_dpid),flow);  
                 break;
-            case LOCAL://LOCAL FLOW
+                
+            case LOCAL: //LOCAL FLOW
                   
-                //cflowentry flow(0x03);
                 flow.set_cookie(constants->cookie&flow_mask);
                 flow.set_cookie_mask(flow_mask);
                 flow.set_command(OFPFC_ADD);
@@ -866,7 +878,7 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 proxy->send_flow_mod_message(proxy->dpt_find(src_dpid),flow);
                 break;
             case BCLIENTS: //CLIENT TO CLIENT FLOW
-                //cflowentry flow(0x03);
+
                 std::cout<<"setting CLIENT-toCLIENT FLOW\n";
                 flow.set_cookie(constants->cookie&flow_mask);
                 flow.set_cookie_mask(flow_mask);
@@ -914,5 +926,6 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
     if(inport_wildcarded==true){//DROPPING RULE MULTIPORT DEPLOYMENT
         
     }
-    return;
+    std::cout<<"exiting\n";
+    sleep(2);
 }

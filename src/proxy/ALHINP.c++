@@ -125,7 +125,7 @@ void ALHINP::handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg){
         default:
                 throw eFlowModBadCommand();
     }
-    delete msg;
+    //delete msg;
     return;
 }  
 

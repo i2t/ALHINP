@@ -76,5 +76,6 @@ uint32_t translator::translating_algorithm(uint64_t dpid, uint32_t realport ){
     return ((dpid_vlan [dpid])*10 +realport);
 }
 uint64_t translator::get_own_dpid(uint32_t virtualport ){
+    std::cout<<"VirtPort: "<<virtualport<<" belongs to: "<<portmap [virtualport].datap<<"\n";
     return(portmap [virtualport].datap);
 }
