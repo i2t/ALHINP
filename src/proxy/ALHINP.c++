@@ -17,7 +17,7 @@
 
 using namespace rofl;
 
-ALHINP::ALHINP(){
+ALHINP::ALHINP(): crofbase::crofbase((uint32_t)(1 << OFP10_VERSION) | (1 << OFP12_VERSION)){
     //listen for AGS
     discover= new discovery(this);
     manager= new orchestrator(this);
@@ -36,9 +36,9 @@ void ALHINP::handle_dpath_open(cofdpt* dpt){
     if(discover->is_aggregator(dpt->get_dpid())){
         manager->AGS_connected(dpt);
     }else{
-        std::cout<<"HAPPY";
         manager->OUI_connected(dpt);
-        
+        rpc_connect_to_ctl(OFP10_VERSION,1,caddress(AF_INET,"127.0.0.1",6633));
+        sleep(2);
     }
 
 }
@@ -46,6 +46,7 @@ void ALHINP::handle_dpath_close(cofdpt* dpt){
     if(discover->is_aggregator(dpt->get_dpid())){
         //AGS connected
         manager->AGS_disconnected(dpt);
+        
         
     }else{
         //An OUI is connected
@@ -55,6 +56,8 @@ void ALHINP::handle_dpath_close(cofdpt* dpt){
 
 void ALHINP::handle_ctrl_open(cofctl *ctl){
     controller=ctl;
+    std::cout<<"Controller connected\n";
+    fflush(stdout);
 }
 void ALHINP::handle_ctrl_close(cofctl *ctl){
     controller=0;
@@ -93,6 +96,8 @@ void ALHINP::handle_set_config (cofctl *ctl, cofmsg_set_config *msg){
 }
 
 void ALHINP::handle_features_request (cofctl *ctl, cofmsg_features_request *msg){
+    std::cout<<"features request received 1\n";
+    fflush(stdout);
     manager->handle_features_request (ctl,msg);
 }
 void ALHINP::handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg){
@@ -123,3 +128,7 @@ void ALHINP::handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg){
     delete msg;
     return;
 }  
+
+void ALHINP::handle_barrier_request(cofctl *ctl, cofmsg_barrier_request *msg){
+    send_barrier_reply(ctl,msg->get_xid());
+}

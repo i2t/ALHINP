@@ -16,6 +16,15 @@
 #include <map>
 #include "../discovery/discovery.h"
 
+enum flowtype {
+    /* Maximum number of physical switch ports. */
+    DOWNSTREAM,
+    UPSTREAM, 
+    LOCAL,
+    BCLIENTS,
+};
+
+
 struct real_port {
     uint64_t                                        datap;
     uint32_t                                        real_port;
@@ -35,7 +44,7 @@ private:
 
     std::map<uint64_t , uint16_t>                       dpid_vlan;
     std::map<uint64_t , uint16_t>                       mac_vlan;
-    std::map<uint32_t , uint64_t>                       ip_mac;
+    //std::map<uint32_t , uint64_t>                       ip_mac;
     
     uint16_t find_vlan_tag(uint64_t dpid);
     uint16_t get_vlan_from_mac(uint64_t mac);
@@ -47,7 +56,7 @@ public:
     uint32_t get_real_port_id(uint32_t virtualport);
     uint32_t get_virtual_port_id(uint64_t dpid, uint32_t realport);
     void     enable_port (uint64_t dpid, uint32_t realport);
-    uint64_t get_own_dpid(uint32_t virtualport ){return(portmap [virtualport].datap);}
+    uint64_t get_own_dpid(uint32_t virtualport );
 };
 
 #endif	/* TRANSLATOR_H */
