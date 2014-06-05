@@ -92,6 +92,7 @@ void orchestrator::AGS_connected(cofdpt* dpt){
     proxy->discover->detect_OUI_control_traffic(dpt);
     std::cout<<"AGS succesfully configured!\n";
     fflush(stdout);
+    //flow_test(dpt);
 }
 void orchestrator::AGS_reset_flows(cofdpt* dpt){
     //RESET any existing flow
@@ -561,8 +562,8 @@ void orchestrator::flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg){
         }catch(eOFmatchNotFound& e){}
         
         try{
-            common_match.set_ip_proto(msg->get_match().get_nw_proto());
-            //std::cout<<"ip_proto_not_wildcarded: "<<msg->get_match().get_ip_proto()<<"\n";
+            //common_match.set_ip_proto(msg->get_match().get_nw_proto());
+            std::cout<<"ip_proto_not_wildcarded: "<<msg->get_match().get_ip_proto()<<"\n";
             if(msg->get_match().get_nw_proto()==6){
             try{
                     try{
@@ -784,8 +785,7 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
         
         switch(flow_type){
             case DOWNSTREAM://DOWNSTREAM FLOW PROCESSING
-                
-                //cflowentry flow(0x03);
+
                 //RULE FOR AGS
                 std::cout<<"setting DOWNSTREAM flow\n";
                 flow.set_cookie(constants->cookie&flow_mask);
@@ -794,8 +794,8 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.set_hard_timeout(constants->hard_timeout);
                 flow.set_idle_timeout(constants->idle_timeout);
                 flow.set_flags(constants->flags);
-                flow.set_priority(constants->priority);
-                flow.set_buffer_id(constants->buffer_id);
+                //flow.set_priority(constants->priority);
+                flow.set_buffer_id(OFP_NO_BUFFER);
                 
                 flow.set_table_id(1);
                 
@@ -803,7 +803,7 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.match.set_in_port(proxy->virtualizer.get_real_port_id(inport));
                 
                 flow.instructions=instrlist;
-                flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                //flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
                 flow.instructions.back().actions.next() = cofaction_push_vlan(OFP12_VERSION,C_TAG); 
                 flow.instructions.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_vlan_vid (OFPVID_PRESENT|proxy->virtualizer.get_vlan_tag(AGG_DPID,dst_dpid)));                                                         
                 flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,CMTS_PORT); 
@@ -816,10 +816,11 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.match=ofmatch;
                 flow.match.set_in_port(OUI_NETPORT);
                 flow.instructions=instrlist;
-                flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                //flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
                 flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION, proxy->virtualizer.get_real_port_id(outport)); 
                     proxy->send_flow_mod_message(proxy->dpt_find(dst_dpid),flow);   
-                
+
+            
                 break;
             case UPSTREAM: //UPSTREAM FLOW PROCESSING
 
@@ -830,8 +831,8 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.set_hard_timeout(constants->hard_timeout);
                 flow.set_idle_timeout(constants->idle_timeout);
                 flow.set_flags(constants->flags);
-                flow.set_priority(constants->priority);            
-                flow.set_buffer_id(constants->buffer_id);
+                //flow.set_priority(constants->priority);            
+                flow.set_buffer_id(OFP_NO_BUFFER);
                 
                 flow.set_table_id(0);
            
@@ -847,10 +848,9 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.set_table_id(1);                
                 flow.match=ofmatch;
                 flow.match.set_in_port(CMTS_PORT);
-                flow.match.set_metadata(proxy->virtualizer.get_vlan_tag(src_dpid,dst_dpid));
+                //flow.match.set_metadata(proxy->virtualizer.get_vlan_tag(src_dpid,dst_dpid));
                 
                 flow.instructions=instrlist;
-                flow.instructions.back().actions.next() = cofaction_pop_vlan(OFP12_VERSION);
                 flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,proxy->virtualizer.get_real_port_id(outport)); 
 
                 proxy->send_flow_mod_message(proxy->dpt_find(dst_dpid),flow);  
@@ -888,12 +888,12 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.set_flags(constants->flags);
                 flow.set_priority(constants->priority);
                 
-                flow.set_buffer_id(constants->buffer_id);
+                flow.set_buffer_id(OFP_NO_BUFFER);
                 flow.set_table_id(0);
                 flow.match=ofmatch;
                 flow.match.set_in_port(proxy->virtualizer.get_real_port_id(inport));
                 flow.instructions=instrlist;
-                flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                //flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
                 flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,OUI_NETPORT); 
                     proxy->send_flow_mod_message(proxy->dpt_find(src_dpid),flow); 
                 
@@ -904,7 +904,8 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 //flow.match.set_vlan_vid(OFPVID_PRESENT|proxy->virtualizer.get_vlan_tag(src_dpid,dst_dpid));
                 flow.match.set_metadata(proxy->virtualizer.get_vlan_tag(src_dpid,dst_dpid));
                 flow.instructions=instrlist;
-                flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                //flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                flow.instructions.back().actions.next() = cofaction_push_vlan(OFP12_VERSION,C_TAG); 
                 flow.instructions.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_vlan_vid (OFPVID_PRESENT|proxy->virtualizer.get_vlan_tag(AGG_DPID,dst_dpid)));                
                 flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,OFPP12_IN_PORT); 
                 proxy->send_flow_mod_message(proxy->dpt_find(AGG_DPID),flow);  
@@ -914,7 +915,7 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.match=ofmatch;
                 flow.match.set_in_port(OUI_NETPORT);
                 flow.instructions=instrlist;
-                flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                //flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
                 flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,proxy->virtualizer.get_real_port_id(outport)); 
                 proxy->send_flow_mod_message(proxy->dpt_find(dst_dpid),flow);  
                 break;
@@ -928,4 +929,37 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
     }
     std::cout<<"exiting\n";
     sleep(2);
+}
+
+void orchestrator::flow_test(cofdpt* dpt){
+
+    cflowentry test(OFP12_VERSION);
+    cmacaddr test_mac("03:52:20:23:22:11");
+    caddress test_ip(AF_INET,"192.168.5.1");
+
+    test.set_command(OFPFC_ADD);
+    test.set_table_id(1);
+    test.set_priority(32768);
+    test.match.set_eth_src(test_mac);
+    test.match.set_eth_dst(test_mac);
+    test.match.set_eth_type(0x0800);
+    test.match.set_vlan_vid(5);
+    test.match.set_vlan_pcp(1);
+    test.match.set_ipv4_src(test_ip);
+    test.match.set_ipv4_dst(test_ip);
+    test.match.set_ip_proto(0x06);
+    test.match.set_tcp_src(5555);
+    test.match.set_tcp_dst(6666);
+    test.match.set_metadata(0x65214);
+    
+    test.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+    test.instructions.back().actions.next() = cofaction_push_vlan(OFP12_VERSION,C_TAG); 
+    test.instructions.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_vlan_vid (66));   
+    test.instructions.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_eth_dst (test_mac));
+    test.instructions.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_eth_src (test_mac));
+    test.instructions.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_ipv4_src (test_ip));
+    test.instructions.back().actions.next() = cofaction_set_field(OFP12_VERSION,coxmatch_ofb_ipv4_src (test_ip));   
+    test.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,1);
+    proxy->send_flow_mod_message(dpt,test);
+    std::cout<<"testing2\n";
 }

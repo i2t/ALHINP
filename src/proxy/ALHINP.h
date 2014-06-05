@@ -80,7 +80,7 @@ private:
     virtual void handle_port_mod (cofctl *ctl, cofmsg_port_mod *msg);
     virtual void handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg);      
     virtual void handle_barrier_request (cofctl *ctl, cofmsg_barrier_request *msg);   
- //    virtual void handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg);   
+  
  //    virtual void handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg);
     
 //    virtual void handle_aggregate_stats_request (cofctl *ctl, cofmsg_aggr_stats_request *msg);

@@ -66,7 +66,7 @@ public:
     void flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg);
     void flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow_mod_constants *constants, uint32_t inport, uint32_t outport);
 
-
+    void flow_test(cofdpt* dpt);
 };
 
 #endif	/* ORCHESTRATOR_H */

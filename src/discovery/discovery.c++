@@ -16,6 +16,9 @@
 
 #define C_TAG 0x8100
 #define S_TAG 0x88A8
+#define ARP 0x0806
+#define TCP 0x06
+#define UDP 17
 
 
 
@@ -47,11 +50,13 @@ discovery::detect_CM(cofdpt* dpt){
         dhcp_req.set_cookie(cookiemask);
         dhcp_req.set_cookie_mask(cookiemask);
         dhcp_req.set_flags(0);
-        dhcp_req.set_priority(3);
+        dhcp_req.set_priority(10);
         dhcp_req.match.set_in_port(CMTS_PORT);
+        dhcp_req.match.set_eth_type(0x0800);
         dhcp_req.match.set_ipv4_dst(caddress(AF_INET, DPS_IP));
+        dhcp_req.match.set_ip_proto(17);
         dhcp_req.match.set_udp_dst(67);
-        dhcp_req.match.insert(coxmatch_ofb_vlan_vid((uint16_t)OFPVID_NONE));
+        dhcp_req.match.insert(coxmatch_ofb_vlan_vid(OFPVID_NONE));
         dhcp_req.instructions.next() = cofinst_apply_actions(OFP12_VERSION);
         dhcp_req.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,OFPP12_CONTROLLER);
         //dhcp_req.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,DPS_PORT);
@@ -70,11 +75,12 @@ discovery::detect_DPS_traffic(cofdpt* dpt){
         fe_provisioning.set_flags(0);
         fe_provisioning.set_priority(2);
         fe_provisioning.match.set_in_port(CMTS_PORT);
+        fe_provisioning.match.set_vlan_vid(OFPVID_NONE);
         fe_provisioning.instructions.next() = cofinst_apply_actions(OFP12_VERSION);
         fe_provisioning.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,DPS_PORT);
     proxy->send_flow_mod_message(dpt,fe_provisioning); 
     
-    cflowentry fe_provisioning2(0x03); 
+    cflowentry fe_provisioning2(0x03); //verified BACK traffic
         fe_provisioning2.set_command(OFPFC_ADD);
         fe_provisioning2.set_idle_timeout(0);
         fe_provisioning2.set_hard_timeout(0);
@@ -88,20 +94,22 @@ discovery::detect_DPS_traffic(cofdpt* dpt){
         fe_provisioning2.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,CMTS_PORT);
     proxy->send_flow_mod_message(dpt,fe_provisioning2); 
         //enable ARP form CMTS to DPS
-    cflowentry fe_provisioning3(0x03); 
-        fe_provisioning3.set_command(OFPFC_ADD);
-        fe_provisioning3.set_idle_timeout(0);
-        fe_provisioning3.set_hard_timeout(0);
-        fe_provisioning3.set_table_id(0);
-        fe_provisioning3.set_cookie(cookiemask);
-        fe_provisioning3.set_cookie_mask(cookiemask);
-        fe_provisioning3.set_flags(0);
-        fe_provisioning3.set_priority(5);
-        fe_provisioning3.match.set_in_port(CMTS_PORT);
-        fe_provisioning3.match.set_arp_spa(caddress(AF_INET, CMTS_IP));
-        fe_provisioning3.instructions.next() = cofinst_apply_actions(OFP12_VERSION);
-        fe_provisioning3.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,DPS_PORT);
-    proxy->send_flow_mod_message(dpt,fe_provisioning3); 
+//    cflowentry fe_provisioning3(0x03); 
+//        fe_provisioning3.set_command(OFPFC_ADD);
+//        fe_provisioning3.set_idle_timeout(0);
+//        fe_provisioning3.set_hard_timeout(0);
+//        fe_provisioning3.set_table_id(0);
+//        fe_provisioning3.set_cookie(cookiemask);
+//        fe_provisioning3.set_cookie_mask(cookiemask);
+//        fe_provisioning3.set_flags(0);
+//        fe_provisioning3.set_priority(5);
+//        fe_provisioning3.match.set_in_port(CMTS_PORT);
+//        fe_provisioning3.match.insert(coxmatch_ofb_vlan_vid(OFPVID_NONE));
+//        fe_provisioning3.match.set_eth_type(ARP);        
+//        fe_provisioning3.match.set_arp_spa(caddress(AF_INET, CMTS_IP));
+//        fe_provisioning3.instructions.next() = cofinst_apply_actions(OFP12_VERSION);
+//        fe_provisioning3.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,DPS_PORT);
+//    proxy->send_flow_mod_message(dpt,fe_provisioning3); 
 }
 void 
 discovery::detect_OUI_control_traffic(cofdpt* dpt){
@@ -113,7 +121,7 @@ discovery::detect_OUI_control_traffic(cofdpt* dpt){
         fe.set_cookie(cookiemask);
         fe.set_cookie_mask(cookiemask);
         fe.set_flags(0);
-        fe.set_priority(2);
+        fe.set_priority(9);
         fe.match.set_in_port(CMTS_PORT);
         fe.match.set_eth_src(cmacaddr(OUI_MAC),cmacaddr("FF:FF:FF:00:00:00"));
         fe.match.insert(coxmatch_ofb_vlan_vid(OFPVID_PRESENT,OFPVID_PRESENT));
@@ -179,7 +187,7 @@ discovery::AGS_enable_OUI_traffic(cofdpt* dpt,uint64_t mac, uint16_t vlan){
         fe_up.set_cookie(cookiemask);
         fe_up.set_cookie_mask(cookiemask);
         fe_up.set_flags(0);
-        fe_up.set_priority(5);
+        fe_up.set_priority(10);
 
         fe_up.match.set_in_port(CMTS_PORT);
         fe_up.match.set_eth_src(cmacaddr(mac));
@@ -198,7 +206,7 @@ discovery::AGS_enable_OUI_traffic(cofdpt* dpt,uint64_t mac, uint16_t vlan){
         fe_down.set_cookie(cookiemask);
         fe_down.set_cookie_mask(cookiemask);
         fe_down.set_flags(0);
-        fe_down.set_priority(5);
+        fe_down.set_priority(10);
         fe_down.match.set_in_port(PROXY_PORT);
         fe_down.match.set_eth_dst(mac);
         fe_down.instructions.next() = cofinst_apply_actions(OFP12_VERSION);
@@ -216,7 +224,7 @@ discovery::AGS_enable_OUI_traffic(cofdpt* dpt,uint64_t mac, uint16_t vlan){
         fe_data.set_cookie(cookiemask);
         fe_data.set_cookie_mask(cookiemask);
         fe_data.set_flags(0);
-        fe_data.set_priority(4);
+        fe_data.set_priority(8);
         fe_data.match.set_in_port(CMTS_PORT);
         fe_data.instructions.next() = cofinst_write_metadata(OFP12_VERSION,(uint64_t)vlan,0);
         fe_data.instructions.next() = cofinst_apply_actions(OFP12_VERSION);

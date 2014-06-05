@@ -35,6 +35,7 @@ ALHINP::~ALHINP() {
 void ALHINP::handle_dpath_open(cofdpt* dpt){
     if(discover->is_aggregator(dpt->get_dpid())){
         manager->AGS_connected(dpt);
+        //manager->flow_test(dpt);
     }else{
         manager->OUI_connected(dpt);
         rpc_connect_to_ctl(OFP10_VERSION,1,caddress(AF_INET,"127.0.0.1",6633));
