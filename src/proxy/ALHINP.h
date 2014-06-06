@@ -17,6 +17,7 @@
 #include "../orchestrator/orchestrator.h"
 #include "../discovery/discovery.h"
 #include "../DOCSIS/DOCSISdriver.h"
+#include "../orchestrator/Flowcache.h"
 
 #include <list>
 
@@ -28,6 +29,7 @@ class ALHINP : public crofbase {
     
     friend orchestrator;
     friend discovery;
+    friend Flowcache;
     
 private:
     
@@ -35,7 +37,8 @@ private:
     orchestrator* manager; 
     cofctl* controller;
     DOCSISdriver docsis;
-    translator virtualizer;   
+    translator virtualizer;
+    Flowcache* flowcache;
 public:
     ALHINP();
     ALHINP(const ALHINP& orig);
@@ -81,7 +84,7 @@ private:
     virtual void handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg);      
     virtual void handle_barrier_request (cofctl *ctl, cofmsg_barrier_request *msg);   
   
- //    virtual void handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg);
+    virtual void handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg);
     
 //    virtual void handle_aggregate_stats_request (cofctl *ctl, cofmsg_aggr_stats_request *msg);
 //    virtual void handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg);

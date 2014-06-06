@@ -29,6 +29,8 @@ orchestrator::orchestrator(ALHINP *ofproxy) {
     feat_req_sent=0;
     feat_req_last_xid=0;
     stats_xid=0;
+    
+
 }
 
 orchestrator::orchestrator(const orchestrator& orig) {
@@ -411,7 +413,7 @@ void orchestrator::handle_port_status(cofdpt* dpt, cofmsg_port_status* msg){
                 port10.set_supported(port.get_supported());
                 port10.set_peer(port.get_peer()); 
                 try{
-                proxy->send_port_status_message(proxy->controller,msg->get_reason(),port10) ;
+                    proxy->send_port_status_message(proxy->controller,msg->get_reason(),port10) ;
                 }catch(...){
                     std::cout<<"[WARNING:] Port Status not sent to controller";
                 }
@@ -962,4 +964,27 @@ void orchestrator::flow_test(cofdpt* dpt){
     test.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,1);
     proxy->send_flow_mod_message(dpt,test);
     std::cout<<"testing2\n";
+}
+
+void orchestrator::handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg){
+    if(msg->get_buffer_id()==OFP_NO_BUFFER){//packet attached to message
+        uint8_t *data;
+        data=msg->get_packet().soframe();
+        size_t datalen = msg->get_packet().framelen();
+        
+    }else{
+        cofaclist* temp = new cofaclist (OFP12_VERSION);
+        (*temp)=msg->get_actions();
+        packoutcache.insert(std::make_pair(msg->get_buffer_id(),temp));
+        cofaclist list (OFP12_VERSION);
+        list.next() = cofaction_output(OFP12_VERSION,OFPP12_CONTROLLER);
+        uint32_t realport = proxy->virtualizer.get_real_port_id(msg->get_in_port());
+        uint64_t dpid = proxy->virtualizer.get_own_dpid(msg->get_in_port());
+        proxy->send_packet_out_message(proxy->dpt_find(dpid),msg->get_buffer_id(),realport,list);
+        
+        
+    }
+}
+void orchestrator::process_packet_out(cofdpt* dpt,cofaclist list, uint8_t *data,size_t datalen){
+    proxy->send_packet_out_message(dpt,OFP_NO_BUFFER,OFPP10_NONE,list,data,datalen);
 }

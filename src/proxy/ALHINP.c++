@@ -21,6 +21,7 @@ ALHINP::ALHINP(): crofbase::crofbase((uint32_t)(1 << OFP10_VERSION) | (1 << OFP1
     //listen for AGS
     discover= new discovery(this);
     manager= new orchestrator(this);
+    flowcache= new Flowcache(this);
     rpc_listen_for_dpts(caddress(AF_INET, "158.227.98.21", 6633));
     //listen for OUI
     rpc_listen_for_dpts(caddress(AF_INET, "192.168.10.1", 6633));
@@ -132,4 +133,7 @@ void ALHINP::handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg){
 
 void ALHINP::handle_barrier_request(cofctl *ctl, cofmsg_barrier_request *msg){
     send_barrier_reply(ctl,msg->get_xid());
+}
+void ALHINP::handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg){
+    manager->handle_packet_out(ctl,msg);
 }
