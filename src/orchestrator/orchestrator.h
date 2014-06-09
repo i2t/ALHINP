@@ -21,12 +21,8 @@ struct flow_mod_constants {
     uint16_t                flags;
     
 };
-//struct flowentry{
-//    cofmatch match;
-//    cofinlist instrlist;
-//    flow_mod_constants constants;
-//};
-    
+
+
 using namespace rofl;
 class ALHINP;
 class orchestrator {

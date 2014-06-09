@@ -152,117 +152,126 @@ void orchestrator::CTRL_disconnected(){
 }
 
 void orchestrator::dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg){
-
-    if(dpt->get_dpid()==AGG_DPID) { //PACKET_INs generated at AGGREGATION
-        if(msg->get_table_id()==1&&msg->get_match().get_in_port()!=CMTS_PORT){
-            //CLIENT TRAFFIC -> transmit to Controller if connected
-            
-            cofmatch m_match(OFP12_VERSION);
-            m_match=msg->get_match();
+    
+    if(msg->get_reason()==OFPR_NO_MATCH){
+        if(proxy->discover->is_hidden_port(cofdpt->get_dpid(),msg->get_match().get_in_port())){
+            delete msg;
+            return;
+        }else{ //not hidden!
             uint32_t translated_port;
-            //translated_port=docsis.translator.translate_real_port(dpt->get_dpid(),in_port);
-            try{
-                m_match.set_in_port(translated_port);
-                proxy->send_packet_in_message(proxy->controller, msg->get_buffer_id(), msg->get_total_len(), msg->get_reason(), 0, msg->get_cookie(), (uint16_t)translated_port,m_match, msg->get_packet().soframe(), msg->get_packet().framelen()); 
-                //printf("packet_in received from %" PRIu64 " and in_port %" PRIu16 " (sending to controller)\n",in_dpid,in_port);
-                fflush(stdout);
-            }catch (eRofBaseNotConnected e){
-                   std::cout<<"WARNING: No Controller connected (discarding PACKEt_IN message)\n";
-            }
-            delete msg; 
-            return;
-        }
-        
-        fflush(stdout);
-        try{
-            if(msg->get_match().get_udp_dst()==67 && msg->get_match().get_ipv4_src_value().get_ipv4_addr()==caddress(AF_INET,"10.10.20.1").get_ipv4_addr()){ // CM_traffic BOOTP
-                std::string string;
-                string = msg->get_packet().payload()->c_str();
-                std::string::iterator end_pos = std::remove(string.begin(), string.end(), ' ');
-                string.erase(end_pos, string.end());
-                unsigned pos = string.find("a4a24a");
-                std::string bootp_mac;
-
-                bootp_mac = string.substr(pos,12);
-                std::string bootp_mac2 =bootp_mac;
-                bootp_mac.insert(2,":");
-                bootp_mac.insert(5,":");
-                bootp_mac.insert(8,":");
-                bootp_mac.insert(11,":");
-                bootp_mac.insert(14,":");
-
-                cmacaddr mac(bootp_mac.c_str());
-
-                fflush(stdout);
-                uint16_t vlan=proxy->discover->register_CM(mac.get_mac());
-
-                if(vlan!=0){
-                    std::cout << "New CableModem registered with MAC: " <<mac.c_str() <<"\n";
-                    std::cout << "VLAN assigned:"<< vlan<< "\n";
-                fflush(stdout);
-                //docsis.CMTS.assign_vlan((char*)mac.c_str(),assigned_vlan,1);
-                }else{
-                    std::cout << "CableModem RETRY with MAC: " <<mac.c_str() <<"\n";
-                }
-                cofaclist aclist(OFP12_VERSION);
-                aclist.next() = cofaction_output(OFP12_VERSION,DPS_PORT);
-                proxy->send_packet_out_message(dpt,msg->get_buffer_id(),CMTS_PORT,aclist);
-                delete msg; 
-                return;            
-            }
-        }catch(...){}
-        cmacaddr OUI(OUI_MAC);
-        if(msg->get_match().get_in_port()==CMTS_PORT && msg->get_match().get_eth_src_addr().get_mac()-OUI.get_mac()<OUI.get_mac()){
-            std::cout << "OUI detected: "<< msg->get_match().get_eth_src_addr().c_str() <<" with VLAN "<< msg->get_match().get_vlan_vid() <<"\n";
-            fflush(stdout);
-            proxy->discover->AGS_enable_OUI_traffic(dpt , msg->get_match().get_eth_src_addr().get_mac(), msg->get_match().get_vlan_vid());
-            delete msg; 
-            return;
-        }
-        
-    }
-          
-    if(dpt->get_dpid()!=AGG_DPID){ //PACKET_INs generated at CLIENT side
-        if(msg->get_match().get_in_port()==OUI_NETPORT){ //Discard PACKET_IN generated at NETPORT
-            //printf("PACKET_IN received from %" PRIu64 " and IN PORT %" PRIu32 "(Hidden) (discarded)\n",dpt->get_dpid(),msg->get_match().get_in_port()); 
-            std::cout<<"PACKET_IN received from "<< dpt->get_dpid_s() << " @ Netport (discarded)\n";
-            fflush(stdout);
-            delete msg; 
-            return;
-        }else{
-            //CLIENT TRAFFIC -> transmit to Controller if connected
-            //uint8_t *data = msg->get_packet().soframe();
-            //size_t datalen =msg->get_packet().framelen();
-            uint16_t translated_port=proxy->virtualizer.get_virtual_port_id(dpt->get_dpid(),msg->get_in_port());
+            translated_port=proxy->virtualizer.get_virtual_port_id(dpt->get_dpid(),msg->get_match().get_in_port());
             msg->get_match().set_in_port(translated_port);
-            uint8_t table_id;
-            if(dpt->get_dpid()==AGG_DPID){
-                table_id=1;
-            }else{
-                table_id=0;
-            }
             try{
-                cofmatch newmatch=msg->get_match();
-                newmatch.set_in_port(translated_port);
                 proxy->send_packet_in_message(proxy->controller, 
                         msg->get_buffer_id(), 
                         msg->get_total_len(), 
                         msg->get_reason(), 
-                        table_id, 
+                        0, /*table_id =0*/
                         msg->get_cookie(), 
                         (uint16_t)translated_port,
                         msg->get_match(),
-                        msg->get_packet().soframe(), 
+                        msg->get_packet().soframe(),
                         msg->get_packet().framelen()); 
-                std::cout<<"PACKET_IN received from "<< dpt->get_dpid_s() << " @ " << translated_port <<" (sending to controller\n";
+                printf("packet_in received from %" PRIu64 " and in_port %" PRIu16 " (sending to controller)\n",dpt->get_dpid(),msg->get_match().get_in_port());
                 fflush(stdout);
             }catch (eRofBaseNotConnected e){
-                   std::cout<<"[WARNING] No Controller connected (discarding PACKEt_IN message)\n";
+                   std::cout<<"WARNING: No Controller connected (discarding PACKEt_IN message)\n";
             }
+            delete msg;
+            return;
+        }
+    }else if(msg->get_reason()==OFPR_ACTION){
+        if(msg->get_table_id()==1 || cofdpt->get_dpid()!=AGG_DPID){
+            uint32_t translated_port;
+            translated_port=proxy->virtualizer.get_virtual_port_id(dpt->get_dpid(),msg->get_match().get_in_port());
+            msg->get_match().set_in_port(translated_port);
+            try{
+                proxy->send_packet_in_message(proxy->controller, 
+                        msg->get_buffer_id(), 
+                        msg->get_total_len(), 
+                        msg->get_reason(), 
+                        0, /*table_id =0*/
+                        msg->get_cookie(), 
+                        (uint16_t)translated_port,
+                        msg->get_match(),
+                        msg->get_packet().soframe(),
+                        msg->get_packet().framelen()); 
+                printf("packet_in received from %" PRIu64 " and in_port %" PRIu16 " (sending to controller)\n",dpt->get_dpid(),msg->get_match().get_in_port());
+                fflush(stdout);
+            }catch (eRofBaseNotConnected e){
+                   std::cout<<"WARNING: No Controller connected (discarding PACKEt_IN message)\n";
+            }
+            delete msg;
+            return;
+        }else{//FOR INTERNAL USAGE
+            try{
+                if(msg->get_match().get_udp_dst()==67 && msg->get_match().get_ipv4_src_value().get_ipv4_addr()==caddress(AF_INET,"10.10.20.1").get_ipv4_addr()){ // CM_traffic BOOTP
+                    std::string string;
+                    string = msg->get_packet().payload()->c_str();
+                    std::string::iterator end_pos = std::remove(string.begin(), string.end(), ' ');
+                    string.erase(end_pos, string.end());
+                    unsigned pos = string.find("a4a24a");
+                    std::string bootp_mac;
+
+                    bootp_mac = string.substr(pos,12);
+                    std::string bootp_mac2 =bootp_mac;
+                    bootp_mac.insert(2,":");
+                    bootp_mac.insert(5,":");
+                    bootp_mac.insert(8,":");
+                    bootp_mac.insert(11,":");
+                    bootp_mac.insert(14,":");
+
+                    cmacaddr mac(bootp_mac.c_str());
+
+                    fflush(stdout);
+                    uint16_t vlan=proxy->discover->register_CM(mac.get_mac());
+
+                    if(vlan!=0){
+                        std::cout << "New CableModem registered with MAC: " <<mac.c_str() <<"\n";
+                        std::cout << "VLAN assigned:"<< vlan<< "\n";
+                    fflush(stdout);
+                    //docsis.CMTS.assign_vlan((char*)mac.c_str(),assigned_vlan,1);
+                    }else{
+                        std::cout << "CableModem RETRY with MAC: " <<mac.c_str() <<"\n";
+                    }
+                    cofaclist aclist(OFP12_VERSION);
+                    aclist.next() = cofaction_output(OFP12_VERSION,DPS_PORT);
+                    proxy->send_packet_out_message(dpt,msg->get_buffer_id(),CMTS_PORT,aclist);
+                    delete msg; 
+                    return;            
+                }
+            }catch(...){
+                delete msg; 
+                return; 
+            }
+            cmacaddr OUI(OUI_MAC);
+            if(msg->get_match().get_in_port()==CMTS_PORT && msg->get_match().get_eth_src_addr().get_mac()-OUI.get_mac()<OUI.get_mac()){
+                std::cout << "OUI detected: "<< msg->get_match().get_eth_src_addr().c_str() <<" with VLAN "<< msg->get_match().get_vlan_vid() <<"\n";
+                fflush(stdout);
+                proxy->discover->AGS_enable_OUI_traffic(dpt , msg->get_match().get_eth_src_addr().get_mac(), msg->get_match().get_vlan_vid());
+                delete msg; 
+                return;
+            }
+            //PACKET_OUT temp
+            std::cout << "PACKET_OUT_TEMP\n";
+            std::map<uint32_t,cofaclist*>::iterator it;
+            it=packoutcache.find(msg->get_buffer_id());
+            if(it!=packoutcache.end()){
+                //process aclist
+                //proxy->send_packet_out_message(dpt,it->first,)
+            }
+            packoutcache.erase(msg->get_buffer_id());
+            fflush(stdout);
+            
             delete msg; 
             return;
-        } 
+
+
+        }
+        
     }
+
+
     delete msg; 
     return;
 }//ready for 1.0
@@ -796,7 +805,7 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.set_hard_timeout(constants->hard_timeout);
                 flow.set_idle_timeout(constants->idle_timeout);
                 flow.set_flags(constants->flags);
-                //flow.set_priority(constants->priority);
+                flow.set_priority(constants->priority);
                 flow.set_buffer_id(OFP_NO_BUFFER);
                 
                 flow.set_table_id(1);
@@ -818,7 +827,7 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.match=ofmatch;
                 flow.match.set_in_port(OUI_NETPORT);
                 flow.instructions=instrlist;
-                //flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                flow.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
                 flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION, proxy->virtualizer.get_real_port_id(outport)); 
                     proxy->send_flow_mod_message(proxy->dpt_find(dst_dpid),flow);   
 
@@ -833,7 +842,7 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.set_hard_timeout(constants->hard_timeout);
                 flow.set_idle_timeout(constants->idle_timeout);
                 flow.set_flags(constants->flags);
-                //flow.set_priority(constants->priority);            
+                flow.set_priority(constants->priority);            
                 flow.set_buffer_id(OFP_NO_BUFFER);
                 
                 flow.set_table_id(0);
@@ -850,7 +859,7 @@ void orchestrator::flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow
                 flow.set_table_id(1);                
                 flow.match=ofmatch;
                 flow.match.set_in_port(CMTS_PORT);
-                //flow.match.set_metadata(proxy->virtualizer.get_vlan_tag(src_dpid,dst_dpid));
+                flow.match.set_metadata(proxy->virtualizer.get_vlan_tag(src_dpid,dst_dpid));
                 
                 flow.instructions=instrlist;
                 flow.instructions.back().actions.next() = cofaction_output(OFP12_VERSION,proxy->virtualizer.get_real_port_id(outport)); 
@@ -984,6 +993,8 @@ void orchestrator::handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg){
         
         
     }
+    delete msg;
+    return;
 }
 void orchestrator::process_packet_out(cofdpt* dpt,cofaclist list, uint8_t *data,size_t datalen){
     proxy->send_packet_out_message(dpt,OFP_NO_BUFFER,OFPP10_NONE,list,data,datalen);
