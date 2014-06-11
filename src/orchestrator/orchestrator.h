@@ -22,6 +22,13 @@ struct flow_mod_constants {
     
 };
 
+struct flowmods{
+    uint64_t                    dpid;
+    rofl::cofaclist*            actions;
+    rofl::cofmatch*             match;
+    flow_mod_constants*         constants;
+    //std::set<rofl::cofaclist*>  aclists;
+};
 
 using namespace rofl;
 class ALHINP;
@@ -68,7 +75,9 @@ public:
     void handle_set_config (cofctl *ctl, cofmsg_set_config *msg);
 
     void flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg);
-    void flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow_mod_constants *constants, uint32_t inport, uint32_t outport);
+    cofmatch* process_matching(cofmsg_flow_mod *msg, uint8_t ofversion = OFP12_VERSION);
+    bool process_action_list(std::map<uint64_t , flowmods*> flowlist,cofaclist aclist,cofmatch* common_match, uint8_t ofversion, uint32_t inport);
+    //void flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow_mod_constants *constants, uint32_t inport, uint32_t outport);
     
     void dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg); 
     
@@ -76,6 +85,7 @@ public:
     void process_packet_out(cofdpt* dpt,cofaclist list, uint8_t *data,size_t datalen);
     
     void flow_test(cofdpt* dpt);
+    uint8_t typeflow(uint64_t src_dpid,uint64_t dst_dpid);
 };
 
 #endif	/* ORCHESTRATOR_H */

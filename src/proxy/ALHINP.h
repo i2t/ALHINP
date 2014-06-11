@@ -30,6 +30,7 @@ class ALHINP : public crofbase {
     friend orchestrator;
     friend discovery;
     friend Flowcache;
+
     
 private:
     
