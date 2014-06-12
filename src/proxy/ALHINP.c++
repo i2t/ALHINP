@@ -137,3 +137,9 @@ void ALHINP::handle_barrier_request(cofctl *ctl, cofmsg_barrier_request *msg){
 void ALHINP::handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg){
     manager->handle_packet_out(ctl,msg);
 }
+
+void ALHINP::handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg){
+    uint64_t flow_cookie= msg->get_flow_stats().get_cookie();
+    orchestrator->flowstats_request(flow_cookie);
+    
+}

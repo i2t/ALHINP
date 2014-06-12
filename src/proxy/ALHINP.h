@@ -88,7 +88,7 @@ private:
     virtual void handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg);
     
 //    virtual void handle_aggregate_stats_request (cofctl *ctl, cofmsg_aggr_stats_request *msg);
-//    virtual void handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg);
+    virtual void handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg);
 //    virtual void handle_table_stats_request (cofctl *ctl, cofmsg_table_stats_request *msg);
 //    //virtual void handle_stats_request(cofctl* ctl, cofmsg_stats_request *msg);    
 //    virtual void handle_port_stats_request(cofctl* ctl, cofmsg_port_stats_request* msg);

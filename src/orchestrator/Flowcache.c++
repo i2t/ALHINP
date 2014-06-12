@@ -20,7 +20,7 @@ Flowcache::Flowcache(const Flowcache& orig) {
 
 Flowcache::~Flowcache() {
 }
-uint64_t
+uint16_t
 Flowcache::store_flow(cofmsg_flow_mod *msg){
     cflow* temp = new cflow;
     temp->constants.buffer_id=OFP_NO_BUFFER;

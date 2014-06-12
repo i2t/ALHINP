@@ -19,15 +19,19 @@ struct flow_mod_constants {
     uint16_t                priority;
     uint32_t                buffer_id;
     uint16_t                flags;
+    uint8_t                 table_id;
     
 };
-
-struct flowmods{
+struct flowmod{
     uint64_t                    dpid;
     rofl::cofaclist*            actions;
     rofl::cofmatch*             match;
     flow_mod_constants*         constants;
-    //std::set<rofl::cofaclist*>  aclists;
+
+};
+struct flowpath{
+    uint8_t longest;
+    std::map<uint64_t , flowmod*> flowmodlist;
 };
 
 using namespace rofl;
@@ -45,6 +49,7 @@ private:
     
     std::map<uint32_t,cofaclist*> packoutcache;
 
+    
 public:
     orchestrator(ALHINP *ofproxy);
     orchestrator(const orchestrator& orig);
@@ -75,9 +80,10 @@ public:
     void handle_set_config (cofctl *ctl, cofmsg_set_config *msg);
 
     void flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg);
-    cofmatch* process_matching(cofmsg_flow_mod *msg, uint8_t ofversion = OFP12_VERSION);
-    bool process_action_list(std::map<uint64_t , flowmods*> flowlist,cofaclist aclist,cofmatch* common_match, uint8_t ofversion, uint32_t inport);
-    //void flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow_mod_constants *constants, uint32_t inport, uint32_t outport);
+cofmatch* process_matching(cofmsg_flow_mod *msg, uint8_t ofversion = OFP12_VERSION);
+    bool process_action_list(flowpath flows,cofmatch* common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport, uint8_t nw_proto);
+    void fill_flowpath(flowpath flows,cofmatch* common_match, cofaclist aclist,uint32_t inport,uint32_t outport, uint8_t flowtype);
+
     
     void dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg); 
     
@@ -86,6 +92,9 @@ public:
     
     void flow_test(cofdpt* dpt);
     uint8_t typeflow(uint64_t src_dpid,uint64_t dst_dpid);
+    void flowstats_request(uint64_t flow_cookie);
+    
+    //void flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow_mod_constants *constants, uint32_t inport, uint32_t outport);
 };
 
 #endif	/* ORCHESTRATOR_H */

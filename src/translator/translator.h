@@ -20,10 +20,10 @@
 
 enum flowtype {
     /* Maximum number of physical switch ports. */
-    DOWNSTREAM,
-    UPSTREAM, 
-    LOCAL,
-    BCLIENTS,
+    DOWNSTREAM = 1,
+    UPSTREAM = 2, 
+    LOCAL = 3,
+    BCLIENTS = 4
 };
 
 

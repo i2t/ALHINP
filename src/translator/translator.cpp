@@ -58,7 +58,10 @@ uint16_t translator::get_vlan_from_mac(uint64_t mac){
     return (mac_vlan [mac]);
 }
 uint32_t translator::get_real_port_id(uint32_t virtualport){
-      return(portmap[virtualport].real_port);  
+    if(virtualport<OFPP10_MAX)
+        return(portmap[virtualport].real_port);
+    else
+        return virtualport;
 }
 uint32_t translator::get_virtual_port_id(uint64_t dpid, uint32_t realport){
     uint32_t virtualport = inv_portmap [dpid] [realport];

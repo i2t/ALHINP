@@ -11,6 +11,8 @@
 #include <rofl/common/openflow/cofmatch.h>
 #include <rofl/common/openflow/cofaclist.h>
 //#include "orchestrator.h"
+
+#define ALL_DPID 0xFFFFFFFF
 using namespace rofl;
 struct params {
     uint64_t                cookie;
@@ -40,7 +42,7 @@ public:
     Flowcache(const Flowcache& orig);
     virtual ~Flowcache();
     
-    uint64_t store_flow(cofmsg_flow_mod *msg);
+    uint16_t store_flow(cofmsg_flow_mod *msg);
     void reg_partial_flow(uint16_t virtualcookie,uint64_t dpid);
     void ask_for_flows();
     void deleteflow(uint64_t realcookie);
@@ -50,7 +52,7 @@ public:
     
 private:
     ALHINP *proxy;
-    uint64_t                    cookie_counter;
+    uint16_t                    cookie_counter;
     std::map < uint64_t /*dpid*/ , std::set <uint16_t> /*virtual cookie*/ > dpidcache;
     std::map < uint16_t /*virtual cookie*/, cflow* > flowcache;
 };
