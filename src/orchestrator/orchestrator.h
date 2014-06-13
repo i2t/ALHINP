@@ -10,29 +10,11 @@
 
 #include <rofl/common/openflow/cofdpt.h>
 #include "../translator/translator.h"
+#include "structs.h"
 
 
-struct flow_mod_constants {
-    uint64_t                cookie;
-    uint16_t                idle_timeout;
-    uint16_t                hard_timeout;
-    uint16_t                priority;
-    uint32_t                buffer_id;
-    uint16_t                flags;
-    uint8_t                 table_id;
-    
-};
-struct flowmod{
-    uint64_t                    dpid;
-    rofl::cofaclist*            actions;
-    rofl::cofmatch*             match;
-    flow_mod_constants*         constants;
 
-};
-struct flowpath{
-    uint8_t longest;
-    std::map<uint64_t , flowmod*> flowmodlist;
-};
+
 
 using namespace rofl;
 class ALHINP;
@@ -47,7 +29,7 @@ private:
     uint32_t                    feat_req_last_xid;
     uint32_t                    stats_xid;
     
-    std::map<uint32_t,cofaclist*> packoutcache;
+    std::map<uint32_t,std::map <uint32_t,cofaclist*> > packoutcache;
 
     
 public:
@@ -81,20 +63,22 @@ public:
 
     void flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg);
 cofmatch* process_matching(cofmsg_flow_mod *msg, uint8_t ofversion = OFP12_VERSION);
-    bool process_action_list(flowpath flows,cofmatch* common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport, uint8_t nw_proto);
+    bool process_action_list(flowpath flows,cofmatch* common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport, uint8_t nw_proto, uint8_t message);
     void fill_flowpath(flowpath flows,cofmatch* common_match, cofaclist aclist,uint32_t inport,uint32_t outport, uint8_t flowtype);
 
     
     void dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg); 
     
     void handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg);
-    void process_packet_out(cofdpt* dpt,cofaclist list, uint8_t *data,size_t datalen);
-    
+    void process_packet_out(uint32_t inport,cofaclist list, uint8_t *data,size_t datalen);
+    void fill_packetouts(flowpath flows,cofaclist aclist,uint32_t inport, uint32_t outport, uint8_t flowtype);
     void flow_test(cofdpt* dpt);
     uint8_t typeflow(uint64_t src_dpid,uint64_t dst_dpid);
     void flowstats_request(uint64_t flow_cookie);
+    //proxy->send_flow_stats_request();
     
     //void flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow_mod_constants *constants, uint32_t inport, uint32_t outport);
+    void handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg);
 };
 
 #endif	/* ORCHESTRATOR_H */

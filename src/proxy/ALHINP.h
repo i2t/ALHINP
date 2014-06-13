@@ -64,8 +64,10 @@ private:
 
 //    virtual void handle_barrier_reply (cofdpt *dpt, cofmsg_barrier_request *msg);
 //    virtual void handle_barrier_reply_timeout(cofdpt *dpt, uint32_t xid);
-//    virtual void handle_error (cofdpt *dpt, cofmsg_error *msg);
-//    virtual void handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg);
+    
+//   virtual void handle_error (cofdpt *dpt, cofmsg_error *msg);
+    
+    virtual void handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg);
 
 //    virtual void handle_queue_get_config_reply (cofdpt *dpt, cofmsg_queue_get_config_reply *msg);
     //stats messages
