@@ -74,8 +74,8 @@ cofmatch* process_matching(cofmsg_flow_mod *msg, uint8_t ofversion = OFP12_VERSI
     void fill_packetouts(flowpath flows,cofaclist aclist,uint32_t inport, uint32_t outport, uint8_t flowtype);
     void flow_test(cofdpt* dpt);
     uint8_t typeflow(uint64_t src_dpid,uint64_t dst_dpid);
-    void flowstats_request(uint64_t flow_cookie);
-    //proxy->send_flow_stats_request();
+    void handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg);
+    void handle_port_stats_request (cofctl *ctl, cofmsg_port_stats_request *msg);
     
     //void flow_mod_generator(cofmatch ofmatch,cofinlist instrlist, flow_mod_constants *constants, uint32_t inport, uint32_t outport);
     void handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg);

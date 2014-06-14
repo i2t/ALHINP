@@ -139,12 +139,12 @@ void ALHINP::handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg){
 }
 
 void ALHINP::handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg){
-    uint64_t flow_cookie= msg->get_flow_stats().get_cookie();
-    //orchestrator->flowstats_request(flow_cookie);
+    manager->handle_flow_stats_request(ctl,msg);
     
 }
 void ALHINP::handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg){
     //firstly exists??
-    uint64_t cookie = msg->get_cookie();
+    manager->handle_flow_removed(dpt,msg);
+   
     
 }

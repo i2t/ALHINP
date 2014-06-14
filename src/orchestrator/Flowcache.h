@@ -50,6 +50,8 @@ public:
     void resetcache();
     bool flow_exists(uint16_t virtualcookie);
     cflow* get_flow(uint16_t virtualcookie);
+    uint64_t get_dpid_for(uint64_t realcookie);
+    uint16_t  get_virtual_cookie(uint64_t realcookie);
     
     
 private:

@@ -1098,8 +1098,34 @@ uint8_t   orchestrator::typeflow(uint64_t src_dpid,uint64_t dst_dpid){
         }
 }
 
-void      orchestrator::flowstats_request(uint64_t flow_cookie){
-    
+void      orchestrator::handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg){
+    uint64_t realcookie=msg->get_flow_stats().get_cookie();
+    uint16_t virtualcookie= proxy->flowcache->get_virtual_cookie(realcookie);
+    cofmatch* common_match;
+    //common_match = process_matching(msg->get_flow_stats()->get_match());
+    uint64_t whereaskdpid; //= proxy->flowcache->get_dpid_for(realcookie);
+    whereaskdpid = proxy->flowcache->get_flow(virtualcookie)->ask_dpid;
+    if(whereaskdpid!=0){
+        cofflow_stats_request stats_request = msg->get_flow_stats();
+        stats_request.set_match(*common_match);
+        stats_request.set_cookie(proxy->flowcache->get_virtual_cookie(virtualcookie));
+        proxy->send_flow_stats_request(proxy->dpt_find(whereaskdpid),msg->get_stats_flags(),stats_request);
+    }else{
+        //return some error
+    }
+    delete msg;
+    return;
+}
+
+void      orchestrator::handle_port_stats_request (cofctl *ctl, cofmsg_port_stats_request *msg){
+    try{
+    cofport_stats_request request(OFP12_VERSION,proxy->virtualizer.get_real_port_id(msg->get_port_stats().get_portno()));
+    proxy->send_port_stats_request(proxy->dpt_find(proxy->virtualizer.get_own_dpid(msg->get_port_stats().get_portno())),msg->get_stats_flags(),request);
+    }catch(...){
+        //something happened;
+    }
+    delete msg;
+    return;
 }
 
 void      orchestrator::handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg){

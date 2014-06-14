@@ -106,3 +106,21 @@ cflow* Flowcache::get_flow(uint16_t virtualcookie){
     it=flowcache.find(virtualcookie);
     return (it->second);
 }
+uint64_t Flowcache::get_dpid_for(uint64_t realcookie){
+    std::map < uint16_t /*virtual cookie*/, cflow* > ::iterator it;
+    for (it=flowcache.begin();it!=flowcache.end();++it){
+        if(it->second->cookie==realcookie){
+            return (it->second->ask_dpid);
+        }
+    }
+    return 0;
+}
+uint16_t  Flowcache::get_virtual_cookie(uint64_t realcookie){
+    std::map < uint16_t /*virtual cookie*/, cflow* > ::iterator it;
+    for (it=flowcache.begin();it!=flowcache.end();++it){
+        if(it->second->cookie==realcookie){
+            return (it->first);
+        }
+    }
+    return 0;
+}
