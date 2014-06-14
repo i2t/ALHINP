@@ -1104,8 +1104,29 @@ void      orchestrator::flowstats_request(uint64_t flow_cookie){
 
 void      orchestrator::handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg){
     //firstly exists??
-    uint64_t cookie = msg->get_cookie();
-    std::map < uint16_t /*virtual cookie*/, cflow* >::iterator it;
+    uint64_t virtualcookie = msg->get_cookie();
     bool exist = false/*result*/;
-    
+    exist=proxy->flowcache->flow_exists((uint16_t)virtualcookie);
+    if(exist==false){
+        delete msg;
+        return;
+    }else{
+        cflow* flow;
+        flow = proxy->flowcache->get_flow(virtualcookie);
+        proxy->send_flow_removed_message(proxy->controller,
+                flow->match,
+                flow->cookie,
+                msg->get_priority(),
+                msg->get_reason(),
+                0,
+                msg->get_duration_sec(),
+                msg->get_duration_nsec(),
+                msg->get_idle_timeout(),
+                msg->get_hard_timeout(),
+                msg->get_packet_count(),
+                msg->get_byte_count());
+        proxy->flowcache->deleteflow(flow->constants.cookie);
+    }
+    delete msg;
+    return;
 }

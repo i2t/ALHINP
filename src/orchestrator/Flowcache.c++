@@ -25,6 +25,7 @@ Flowcache::store_flow(cofmsg_flow_mod *msg){
     cflow* temp = new cflow;
     temp->constants.buffer_id=OFP_NO_BUFFER;
     temp->constants.cookie=msg->get_cookie();
+    temp->cookie=msg->get_cookie();
     temp->constants.flags=msg->get_flags();
     temp->constants.hard_timeout=msg->get_hard_timeout();
     temp->constants.idle_timeout=msg->get_idle_timeout();
@@ -50,6 +51,8 @@ Flowcache::deleteflow(uint64_t realcookie){
                     it3=it2->second.find(it->first);
                     if(it3!=it2->second.end()){
                         cflowentry flowrem(OFP12_VERSION);
+                        flowrem.set_command(OFPFC_DELETE);
+                        flowrem.set_cookie(it->first);
                         proxy->send_flow_mod_message(proxy->dpt_find(it2->first),flowrem);
                     }
                 }
@@ -75,4 +78,31 @@ Flowcache::resetcache(){
     }
     cookie_counter=1;
     
+}
+/**
+ * \brief This method checks if cookie exists or not in the cache
+ * @param cookie
+ * @return 
+ */
+bool Flowcache::flow_exists(uint16_t virtualcookie){
+    
+    std::map < uint16_t /*virtual cookie*/, cflow* >::iterator it;
+    it=flowcache.find(virtualcookie);
+    if(it!=flowcache.end()){
+        //found!
+        return true;
+    }else{
+        //Has it been deleted ¿?
+        return false;
+    }
+}
+/**
+ * \brief retrieves flow params asociated with a virtual cookie
+ * @param virtualcookie
+ * @return 
+ */
+cflow* Flowcache::get_flow(uint16_t virtualcookie){
+    std::map < uint16_t /*virtual cookie*/, cflow* >::iterator it;
+    it=flowcache.find(virtualcookie);
+    return (it->second);
 }

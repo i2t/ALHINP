@@ -48,6 +48,8 @@ public:
     void deleteflow(uint64_t realcookie);
     void deleteflow(uint32_t outport,cofmatch match);    
     void resetcache();
+    bool flow_exists(uint16_t virtualcookie);
+    cflow* get_flow(uint16_t virtualcookie);
     
     
 private:
