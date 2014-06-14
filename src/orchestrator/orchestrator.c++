@@ -1128,6 +1128,12 @@ void      orchestrator::handle_port_stats_request (cofctl *ctl, cofmsg_port_stat
     return;
 }
 
+void      orchestrator::handle_table_stats_request (cofctl *ctl, cofmsg_table_stats_request *msg){
+    //ignore
+    delete msg;
+    return;
+}
+
 void      orchestrator::handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg){
     //firstly exists??
     uint64_t virtualcookie = msg->get_cookie();

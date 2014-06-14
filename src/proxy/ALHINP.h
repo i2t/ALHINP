@@ -91,10 +91,10 @@ private:
     
 //    virtual void handle_aggregate_stats_request (cofctl *ctl, cofmsg_aggr_stats_request *msg);
     virtual void handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg);
-//    virtual void handle_table_stats_request (cofctl *ctl, cofmsg_table_stats_request *msg);
+    virtual void handle_table_stats_request (cofctl *ctl, cofmsg_table_stats_request *msg);
 //    //virtual void handle_stats_request(cofctl* ctl, cofmsg_stats_request *msg);    
-//    virtual void handle_port_stats_request(cofctl* ctl, cofmsg_port_stats_request* msg);
-    
+    virtual void handle_port_stats_request(cofctl* ctl, cofmsg_port_stats_request* msg);
+    virtual void handle_desc_stats_request (cofctl *ctl, cofmsg_desc_stats_request *msg);
 //    virtual void handle_queue_get_config_request (cofctl *ctl, cofmsg_queue_get_config_request *msg);
 //    virtual void handle_role_request (cofctl *ctl, cofmsg_role_request *msg);
 //    virtual void handle_table_mod (cofctl *ctl, cofmsg_table_mod *msg);

@@ -142,6 +142,26 @@ void ALHINP::handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *
     manager->handle_flow_stats_request(ctl,msg);
     
 }
+void ALHINP::handle_desc_stats_request (cofctl *ctl, cofmsg_desc_stats_request *msg){
+    
+    cofdesc_stats_reply stats(
+                    OFP10_VERSION,
+                    "mfr desc",
+                    "DOCSIS ALHINP",
+                    "alpha 0.1",
+                    "1234567890",
+                    "DOCSIS ALHINP");
+    send_desc_stats_reply(controller,msg->get_xid(),stats);
+    cofmsg_desc_stats_request request;
+    delete msg;
+    return;
+}
+
+void ALHINP::handle_table_stats_request (cofctl *ctl, cofmsg_table_stats_request *msg){
+    manager->handle_table_stats_request(ctl,msg);
+    
+}
+
 void ALHINP::handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg){
     //firstly exists??
     manager->handle_flow_removed(dpt,msg);
