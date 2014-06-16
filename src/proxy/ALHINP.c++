@@ -16,6 +16,8 @@
 
 
 using namespace rofl;
+using namespace std;
+using namespace libconfig;
 
 ALHINP::ALHINP(): crofbase::crofbase((uint32_t)(1 << OFP10_VERSION) | (1 << OFP12_VERSION)){
     //listen for AGS
@@ -33,16 +35,83 @@ ALHINP::~ALHINP() {
     
 }
 
-int ALHINP::parse_config_file(char* file,Config config){
-    
-      try{
-          config.readFile("example.cfg");
-      }catch(const FileIOException &fioex){
-          std::cerr << "I/O error while reading file." << std::endl;
+int ALHINP::parse_config_file(char* file, ALHINPconfig config, ALHINPportconfig portconfig){
+    Config cfg;
+    try{
+        cfg.readFile(file);
+    }catch(const FileIOException &fioex){
+        std::cerr << "I/O error while reading file." << std::endl;
           return(EXIT_FAILURE);
-      }
+    }catch(const ParseException &pex){
+            std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
+            << " - " << pex.getError() << std::endl;
+        return(EXIT_FAILURE);
+    }
+    // Get the store name.
+    try{
+        string name = cfg.lookup("name");
+        cout << "Store name: " << name << endl << endl;
+        string desc =cfg.lookup("desc");
+        uint64_t ALHINPdpid = cfg.lookup("dpid");
+    }catch(const SettingNotFoundException &nfex){
+        cerr << "Uops! something went wrong :S" << endl;
+    }
+    //GET ALHINP config
+    Setting &root = cfg.getRoot();
+    uint32_t controllerport;
+    uint32_t ouiport;
+    uint32_t agsport;
+    uint32_t vlanstart;
+    try{
+        const Setting &AHLPconfig = root["ALHINP-config"];
+        if(!(AHLPconfig.lookupValue("CONTROLLER_IP",config.controller_ip) 
+                &&AHLPconfig.lookupValue("CONTROLLER_OF_VERSION",config.of_version)
+                &&AHLPconfig.lookupValue("CONTROLLER_PORT",controllerport)
+                &&AHLPconfig.lookupValue("LISTENING_IP_AGS",config.listening_IP_ags)
+                &&AHLPconfig.lookupValue("LISTENING_PORT_AGS",agsport)
+                &&AHLPconfig.lookupValue("LISTENING_IP_OUIS",config.listening_IP_oui)
+                &&AHLPconfig.lookupValue("VLANstart",vlanstart)
+                &&AHLPconfig.lookupValue("LISTENING_PORT_OUIS",ouiport) ));
+    }catch(...){
+        return(EXIT_FAILURE);
+    }
+    config.controller_port=(uint16_t)controllerport;
+    config.listening_oui_port=(uint16_t)ouiport;
+    config.listening_ags_port=(uint16_t)agsport;
+    config.VLANstart=(uint16_t)vlanstart;
+    
+    uint32_t cmtsport;
+    uint32_t dataport;
+    uint32_t dpsport;
+    uint32_t ouinetport;    
+    uint32_t ouiuserport;
+    try{
+        const Setting &AHLPortConfig = root["Port-config"];
+        if(!(AHLPortConfig.lookupValue("CONTROLLER_IP",cmtsport) 
+                &&AHLPortConfig.lookupValue("CONTROLLER_OF_VERSION",dataport)
+                &&AHLPortConfig.lookupValue("CONTROLLER_PORT",dpsport)
+                &&AHLPortConfig.lookupValue("LISTENING_IP_AGS",ouinetport)
+                &&AHLPortConfig.lookupValue("LISTENING_PORT_AGS",ouiuserport) ));
+    }catch(...){
+        return(EXIT_FAILURE);
+    }
+    portconfig.cmts_port=(uint16_t)cmtsport;
+    portconfig.data_port=(uint16_t)dataport;
+    portconfig.dps_port=(uint16_t)dpsport;
+    portconfig.oui_netport=(uint16_t)ouinetport;
+    portconfig.oui_userport=(uint16_t)ouiuserport;
+    
+    
+    try{
+        const Setting &AGSconfig = root["AGS-config"];
+        if(!AGSconfig.lookupValue("AGSDPID",config.AGS_dpid));
+    }catch(...){
+        return(EXIT_FAILURE);
+    }
+    
     return (EXIT_SUCCESS);
 }
+
 void ALHINP::handle_dpath_open(cofdpt* dpt){
     if(discover->is_aggregator(dpt->get_dpid())){
         manager->AGS_connected(dpt);

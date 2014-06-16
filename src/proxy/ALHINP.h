@@ -46,7 +46,8 @@ private:
     DOCSISdriver docsis;
     translator virtualizer;
     Flowcache* flowcache;
-    Config config;
+    ALHINPconfig config;
+    ALHINPportconfig portconfig;
 public:
     ALHINP();
     ALHINP(const ALHINP& orig);
@@ -55,7 +56,7 @@ public:
     
 private:
     
-    int parse_config_file(char* file, Config config);
+    int parse_config_file(char* file, ALHINPconfig config,ALHINPportconfig portconfig);
     
     virtual void handle_timeout(int opaque);
     virtual void handle_dpath_open(cofdpt *dpt);
