@@ -33,6 +33,16 @@ ALHINP::~ALHINP() {
     
 }
 
+int ALHINP::parse_config_file(char* file,Config config){
+    
+      try{
+          config.readFile("example.cfg");
+      }catch(const FileIOException &fioex){
+          std::cerr << "I/O error while reading file." << std::endl;
+          return(EXIT_FAILURE);
+      }
+    return (EXIT_SUCCESS);
+}
 void ALHINP::handle_dpath_open(cofdpt* dpt){
     if(discover->is_aggregator(dpt->get_dpid())){
         manager->AGS_connected(dpt);
@@ -75,23 +85,20 @@ void ALHINP::handle_packet_in(cofdpt *dpt, cofmsg_packet_in *msg){
     manager->dispath_PACKET_IN(dpt,msg);
 }
 
-void ALHINP::handle_features_reply(cofdpt *dpt, cofmsg_features_reply *msg){
-    manager->handle_features_reply(dpt,msg);
-}
-void ALHINP::handle_get_config_reply (cofdpt *dpt, cofmsg_get_config_reply *msg){
-        //send_set_config_message(dpt,config_flags,miss_send_len);
-        delete msg;
-        return;
-}
-    
 void ALHINP::handle_port_status(cofdpt* dpt, cofmsg_port_status* msg){
     manager->handle_port_status(dpt,msg);
 }
 void ALHINP::handle_port_mod (cofctl *ctl, cofmsg_port_mod *msg){
     manager->handle_port_mod (ctl, msg);
 } 
+
 void ALHINP::handle_get_config_request(cofctl* ctl, cofmsg_get_config_request* msg){
     manager->handle_get_config_request (ctl,msg);
+}
+void ALHINP::handle_get_config_reply (cofdpt *dpt, cofmsg_get_config_reply *msg){
+        //send_set_config_message(dpt,config_flags,miss_send_len);
+        delete msg;
+        return;
 }
 void ALHINP::handle_set_config (cofctl *ctl, cofmsg_set_config *msg){
     manager->handle_set_config (ctl, msg);
@@ -102,6 +109,10 @@ void ALHINP::handle_features_request (cofctl *ctl, cofmsg_features_request *msg)
     fflush(stdout);
     manager->handle_features_request (ctl,msg);
 }
+void ALHINP::handle_features_reply(cofdpt *dpt, cofmsg_features_reply *msg){
+    manager->handle_features_reply(dpt,msg);
+}
+
 void ALHINP::handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg){
     switch (msg->get_command()) {
         case OFPFC_ADD: {
@@ -109,19 +120,19 @@ void ALHINP::handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg){
                 } break;
 
         case OFPFC_MODIFY: {
-                       // flow_mod_modify(ctl, msg, false);
+                manager->flow_mod_modify(ctl, msg, false);
                 } break;
 
         case OFPFC_MODIFY_STRICT: {
-                       //flow_mod_modify(ctl, msg, true);
+                manager->flow_mod_modify(ctl, msg, true);
                 } break;
 
         case OFPFC_DELETE: {
-                //manager->flow_mod_delete(ctl, msg, true);
+                manager->flow_mod_delete(ctl, msg, true);
                 } break;
 
         case OFPFC_DELETE_STRICT: {
-                       //flow_mod_delete(ctl, msg, true);
+                manager->flow_mod_delete(ctl, msg, true);
                 } break;
 
         default:
@@ -130,18 +141,28 @@ void ALHINP::handle_flow_mod (cofctl *ctl, cofmsg_flow_mod *msg){
     //delete msg;
     return;
 }  
-
-void ALHINP::handle_barrier_request(cofctl *ctl, cofmsg_barrier_request *msg){
-    send_barrier_reply(ctl,msg->get_xid());
+void ALHINP::handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg){
+    //firstly exists??
+    manager->handle_flow_removed(dpt,msg);
+   
+    
 }
 void ALHINP::handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg){
     manager->handle_packet_out(ctl,msg);
+}
+
+void ALHINP::handle_barrier_request(cofctl *ctl, cofmsg_barrier_request *msg){
+    send_barrier_reply(ctl,msg->get_xid());
 }
 
 void ALHINP::handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg){
     manager->handle_flow_stats_request(ctl,msg);
     
 }
+void ALHINP::handle_flow_stats_reply (cofdpt *dpt, cofmsg_flow_stats_reply *msg){
+    manager->handle_flow_stats_reply (dpt, msg);
+}
+
 void ALHINP::handle_desc_stats_request (cofctl *ctl, cofmsg_desc_stats_request *msg){
     
     cofdesc_stats_reply stats(
@@ -162,9 +183,9 @@ void ALHINP::handle_table_stats_request (cofctl *ctl, cofmsg_table_stats_request
     
 }
 
-void ALHINP::handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *msg){
-    //firstly exists??
-    manager->handle_flow_removed(dpt,msg);
-   
-    
+void ALHINP::handle_port_stats_request (cofctl *ctl, cofmsg_port_stats_request *msg){
+    manager->handle_port_stats_request (ctl, msg);
+}
+void ALHINP::handle_port_stats_reply   (cofdpt *dpt, cofmsg_port_stats_reply *msg){
+    manager->handle_port_stats_reply (dpt, msg);
 }

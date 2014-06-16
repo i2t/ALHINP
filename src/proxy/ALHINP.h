@@ -19,9 +19,15 @@
 #include "../DOCSIS/DOCSISdriver.h"
 #include "../orchestrator/Flowcache.h"
 
+#include <libconfig.h++>
+#include <iostream>
+#include <iomanip>
+#include <cstdlib>
+
 #include <list>
 
 using namespace rofl;
+using namespace libconfig;
 
 //class discovery;
 //class orchestrator;
@@ -40,6 +46,7 @@ private:
     DOCSISdriver docsis;
     translator virtualizer;
     Flowcache* flowcache;
+    Config config;
 public:
     ALHINP();
     ALHINP(const ALHINP& orig);
@@ -47,7 +54,8 @@ public:
     void install_flowentry();
     
 private:
-
+    
+    int parse_config_file(char* file, Config config);
     
     virtual void handle_timeout(int opaque);
     virtual void handle_dpath_open(cofdpt *dpt);
@@ -74,8 +82,8 @@ private:
 //    virtual void handle_stats_reply (cofdpt *dpt, cofmsg_stats_reply *msg);    
 //    virtual void handle_aggregate_stats_reply(cofdpt* dpt, cofmsg_aggr_stats_reply* msg);
 //    virtual void handle_desc_stats_reply (cofdpt *dpt, cofmsg_desc_stats_reply *msg);
-//    virtual void handle_flow_stats_reply (cofdpt *dpt, cofmsg_flow_stats_reply *msg);
-//    virtual void handle_port_stats_reply (cofdpt *dpt, cofmsg_port_stats_reply *msg);
+    virtual void handle_flow_stats_reply (cofdpt *dpt, cofmsg_flow_stats_reply *msg);
+    virtual void handle_port_stats_reply (cofdpt *dpt, cofmsg_port_stats_reply *msg);
 
 //    virtual void handle_table_stats_reply (cofdpt *dpt, cofmsg_table_stats_reply *msg);
 //
