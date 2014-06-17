@@ -59,8 +59,11 @@ void orchestrator::OUI_reset_flows(cofdpt* dpt){
         fe_NO_PACKET_IN.set_flags(0);
         fe_NO_PACKET_IN.set_priority(1);
         fe_NO_PACKET_IN.match.set_in_port(proxy->portconfig.oui_netport);
-
-    proxy->send_flow_mod_message(dpt,fe_NO_PACKET_IN);
+        try{
+            proxy->send_flow_mod_message(dpt,fe_NO_PACKET_IN);
+        }catch(...){
+        
+        }
 }
 void orchestrator::OUI_set_port_behavior(cofdpt* dpt){
     std::map<uint32_t, cofport*>::iterator port_it;
@@ -78,7 +81,9 @@ void orchestrator::OUI_set_port_behavior(cofdpt* dpt){
                 fe_NO_PACKET_IN.set_flags(0);
                 fe_NO_PACKET_IN.set_priority(1);
                 fe_NO_PACKET_IN.match.set_in_port(port_it->first);
+            try{    
             proxy->send_flow_mod_message(dpt,fe_NO_PACKET_IN);
+            }catch(...){}
         }
      
     }
@@ -150,8 +155,9 @@ void orchestrator::CTRL_connected(){
     
 }
 void orchestrator::CTRL_disconnected(){
-    
-}       
+    //proxy->controller=0;
+}     
+
 /********************************  PACKET_IN *****************************************/
 void      orchestrator::dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg){
     
@@ -281,6 +287,7 @@ void      orchestrator::dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg){
     delete msg; 
     return;
 }//ready for 1.0
+
 /************************  FEATURES REQUEST / REPLY ***********************************/
 void      orchestrator::handle_features_request (cofctl *ctl, cofmsg_features_request *msg){
     std::cout<<"features_request received\n";
@@ -408,6 +415,7 @@ void      orchestrator::handle_features_reply(cofdpt* dpt, cofmsg_features_reply
     delete msg;
     return; 
 }
+
 /****************************  PORT MOD / STATUS *************************************/
 void      orchestrator::handle_port_status(cofdpt* dpt, cofmsg_port_status* msg){
 
@@ -442,6 +450,7 @@ void      orchestrator::handle_port_mod (cofctl *ctl, cofmsg_port_mod *msg)  {
 	delete msg;
         return;
 }//ready for 1.0
+
 /******************************  cONFIGURATION ***************************************/
 void      orchestrator::handle_get_config_request(cofctl* ctl, cofmsg_get_config_request* msg){
     proxy->send_get_config_reply(proxy->controller,msg->get_xid(),config_flags,miss_send_len);
@@ -458,6 +467,7 @@ void      orchestrator::handle_set_config (cofctl *ctl, cofmsg_set_config *msg){
     delete msg;
     return;
 }
+
 /***********************************  TIMERS *****************************************/
 void      orchestrator::handle_timeout(int opaque){
     switch(opaque){
@@ -500,6 +510,7 @@ void      orchestrator::handle_timeout(int opaque){
             break;
     }
 }
+
 /*******************************  PACKET_OUT *****************************************/
 void      orchestrator::handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg){
     if(msg->get_buffer_id()==OFP_NO_BUFFER){//packet attached to message
@@ -594,6 +605,7 @@ void      orchestrator::fill_packetouts(flowpath flows,cofaclist aclist,uint32_t
     }
     
 }
+
 /*******************************  FLOW_MODS  *****************************************/
 void      orchestrator::flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg){
     //uint8_t ofversion=ctl->get_version();
@@ -1202,8 +1214,6 @@ uint8_t   orchestrator::typeflow(uint64_t src_dpid,uint64_t dst_dpid){
             }
         }
 }
-
-
 
 /********************************  STATISTICS *****************************************/
 void      orchestrator::handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg){

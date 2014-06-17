@@ -34,6 +34,7 @@ ALHINP::ALHINP(char* configfile): crofbase::crofbase((uint32_t)(1 << OFP10_VERSI
     //listen for OUI
     std::cout << "Listening on "<< config.listening_IP_oui.c_str()<<":"<<config.listening_ags_port<<" for OUIs\n";
     rpc_listen_for_dpts(caddress(AF_INET, config.listening_IP_oui.c_str(), config.listening_oui_port));
+    test();
 
 }
 ALHINP::ALHINP(const ALHINP& orig) {
@@ -89,6 +90,10 @@ int ALHINP::parse_config_file(char* file){
                 &&AHLPconfig.lookupValue("LISTENING_PORT_AGS",agsport)
                 &&AHLPconfig.lookupValue("LISTENING_IP_OUIS",config.listening_IP_oui)
                 &&AHLPconfig.lookupValue("VLANstart",vlanstart)
+                &&AHLPconfig.lookupValue("CMTS_IP",config.CMTS_ip)
+                &&AHLPconfig.lookupValue("DPS_IP",config.DPS_ip)
+                &&AHLPconfig.lookupValue("OUI_MAC",config.oui_mac)
+                &&AHLPconfig.lookupValue("CM_MAC",config.cm_mac)
                 &&AHLPconfig.lookupValue("LISTENING_PORT_OUIS",ouiport) ));
     }catch(...){
         std::cerr << "Uops! something went wrong (ALHINP-config) :S" << endl;
@@ -139,6 +144,7 @@ int ALHINP::parse_config_file(char* file){
     std::stringstream ss2;
     ss2 << std::hex << AGS_dpidtemp.c_str();
     ss2 >> config.AGS_dpid;
+    //std::cout<<"AGS_DPID: "<< config.AGS_dpid<<"\n";
     
     return (EXIT_SUCCESS);
 }
@@ -149,8 +155,9 @@ void ALHINP::handle_dpath_open(cofdpt* dpt){
         //manager->flow_test(dpt);
     }else{
         manager->OUI_connected(dpt);
+        std::cout<<"Trying to connect controller @ "<< config.controller_ip.c_str() << "\n";
         rpc_connect_to_ctl(OFP10_VERSION,1,caddress(AF_INET,config.controller_ip.c_str(),config.controller_port));
-        sleep(2);
+        
     }
 
 }
@@ -286,4 +293,7 @@ void ALHINP::handle_port_stats_request (cofctl *ctl, cofmsg_port_stats_request *
 }
 void ALHINP::handle_port_stats_reply   (cofdpt *dpt, cofmsg_port_stats_reply *msg){
     manager->handle_port_stats_reply (dpt, msg);
+}
+void ALHINP::test(){
+    
 }

@@ -23,7 +23,7 @@ void interrupt_handler(int dummy=0) {
 void TCL_finish(int dummy=0) {
 	//Only stop ciosrv 
     wait(NULL);
-    std::cout<<"Alma recogida\n";
+    
 }
 
 int main(int argc, char** argv){
