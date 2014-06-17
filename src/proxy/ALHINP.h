@@ -36,6 +36,7 @@ class ALHINP : public crofbase {
     friend orchestrator;
     friend discovery;
     friend Flowcache;
+    friend translator;
 
     
 private:
@@ -44,19 +45,19 @@ private:
     orchestrator* manager; 
     cofctl* controller;
     DOCSISdriver docsis;
-    translator virtualizer;
+    translator* virtualizer;
     Flowcache* flowcache;
     ALHINPconfig config;
     ALHINPportconfig portconfig;
 public:
-    ALHINP();
+    ALHINP(char* configfile);
     ALHINP(const ALHINP& orig);
     virtual ~ALHINP();
     void install_flowentry();
     
 private:
     
-    int parse_config_file(char* file, ALHINPconfig config,ALHINPportconfig portconfig);
+    int parse_config_file(char* file);
     
     virtual void handle_timeout(int opaque);
     virtual void handle_dpath_open(cofdpt *dpt);

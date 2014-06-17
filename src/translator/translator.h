@@ -15,6 +15,7 @@
 #include <utility>
 #include <map>
 #include "../discovery/discovery.h"
+//#include "../proxy/ALHINP.h"
 
 
 
@@ -36,11 +37,12 @@ struct real_port {
 class translator {
     
 public:
-    translator();
+    translator(ALHINP *proxye);
     translator(const translator& orig);
     virtual ~translator();
 private:
     //port translation 
+    ALHINP* proxy;
     std::map<uint32_t , struct real_port >              portmap; //virtual identifier to real id
     std::map<uint64_t , std::map<uint32_t ,uint32_t > > inv_portmap; //real to virtual mapping 
 

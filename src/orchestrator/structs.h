@@ -52,7 +52,8 @@ struct ALHINPconfig {
     string      cm_mac;
     uint16_t    VLANstart;
     
-    string      AGS_dpid;
+    uint64_t    AGS_dpid;
+    uint64_t    ALHINP_dpid;
     
 };
 

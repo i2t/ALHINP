@@ -9,14 +9,16 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include "../proxy/ALHINP.h"
+//#include "../proxy/ALHINP.h"
 
 
 
 /**
  * @brief: constructor
  */
-translator::translator() {
-    
+translator::translator(ALHINP *proxye) {
+    proxy=proxye;
 }
 
 translator::translator(const translator& orig) {
@@ -32,7 +34,7 @@ translator::get_vlan_tag(uint64_t dpid_src,uint64_t dpid_dst){
    // std::cout<< " dst_dpid: " << dpid_dst <<"\n";
    
     
-    if(dpid_src!=AGG_DPID){
+    if(dpid_src!=proxy->config.AGS_dpid){
         return find_vlan_tag(dpid_src); //UPSTREAM
     }else{
         return find_vlan_tag(dpid_dst); //DOWNSTREAM
@@ -42,7 +44,7 @@ uint16_t translator::find_vlan_tag(uint64_t dpid){ //VLAN assigment algorithm to
     return (uint16_t)dpid_vlan [dpid];
 }
 void translator::enable_device(uint64_t mac, uint64_t dpid,std::string dpid_s){
-    if(dpid==AGG_DPID){
+    if(dpid==proxy->config.AGS_dpid){
     dpid_vlan.insert(std::make_pair(dpid,1));
     std::cout <<"\n" << dpid_s <<" as Device ID "<< (uint16_t)dpid_vlan [dpid] <<"\n";
     }else{

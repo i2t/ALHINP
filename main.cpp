@@ -46,7 +46,7 @@ int main(int argc, char** argv){
         rofl::ciosrv::init();
         
         
-        ALHINP ofdocsis;
+        ALHINP ofdocsis (argv[1]);
         
 
         //ciosrv run. Only will stop in Ctrl+C

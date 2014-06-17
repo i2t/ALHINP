@@ -19,14 +19,21 @@ using namespace rofl;
 using namespace std;
 using namespace libconfig;
 
-ALHINP::ALHINP(): crofbase::crofbase((uint32_t)(1 << OFP10_VERSION) | (1 << OFP12_VERSION)){
+ALHINP::ALHINP(char* configfile): crofbase::crofbase((uint32_t)(1 << OFP10_VERSION) | (1 << OFP12_VERSION)){
     //listen for AGS
+    
+    if(parse_config_file(configfile)!=0){
+        exit(1);
+    }
     discover= new discovery(this);
     manager= new orchestrator(this);
     flowcache= new Flowcache(this);
-    rpc_listen_for_dpts(caddress(AF_INET, "158.227.98.21", 6633));
+    virtualizer = new translator (this);
+    std::cout << "Listening on "<< config.listening_IP_ags.c_str() <<":"<<(uint16_t) config.listening_ags_port<<" for AGS\n";
+    rpc_listen_for_dpts(caddress(AF_INET, config.listening_IP_ags.c_str(),config.listening_ags_port));
     //listen for OUI
-    rpc_listen_for_dpts(caddress(AF_INET, "192.168.10.1", 6633));
+    std::cout << "Listening on "<< config.listening_IP_oui.c_str()<<":"<<config.listening_ags_port<<" for OUIs\n";
+    rpc_listen_for_dpts(caddress(AF_INET, config.listening_IP_oui.c_str(), config.listening_oui_port));
 
 }
 ALHINP::ALHINP(const ALHINP& orig) {
@@ -35,7 +42,7 @@ ALHINP::~ALHINP() {
     
 }
 
-int ALHINP::parse_config_file(char* file, ALHINPconfig config, ALHINPportconfig portconfig){
+int ALHINP::parse_config_file(char* file){
     Config cfg;
     try{
         cfg.readFile(file);
@@ -48,14 +55,25 @@ int ALHINP::parse_config_file(char* file, ALHINPconfig config, ALHINPportconfig 
         return(EXIT_FAILURE);
     }
     // Get the store name.
+    string tempdpid;
+    string desc;
     try{
         string name = cfg.lookup("name");
         cout << "Store name: " << name << endl << endl;
-        string desc =cfg.lookup("desc");
-        uint64_t ALHINPdpid = cfg.lookup("dpid");
+        string temp1 = cfg.lookup("desc");
+        string temp2 = cfg.lookup("dpid");
+        tempdpid = temp2;
+        desc = temp1;
     }catch(const SettingNotFoundException &nfex){
-        cerr << "Uops! something went wrong :S" << endl;
+        std::cerr << "Uops! something went wrong D :S" << endl;
+        return(EXIT_FAILURE);
     }
+    
+    std::stringstream ss;
+    ss << std::hex << tempdpid.c_str();
+    ss >> config.ALHINP_dpid;
+    std::cout << "ALHINP DPID: "<< std::hex << config.ALHINP_dpid << "\n";
+
     //GET ALHINP config
     Setting &root = cfg.getRoot();
     uint32_t controllerport;
@@ -73,8 +91,11 @@ int ALHINP::parse_config_file(char* file, ALHINPconfig config, ALHINPportconfig 
                 &&AHLPconfig.lookupValue("VLANstart",vlanstart)
                 &&AHLPconfig.lookupValue("LISTENING_PORT_OUIS",ouiport) ));
     }catch(...){
+        std::cerr << "Uops! something went wrong (ALHINP-config) :S" << endl;
         return(EXIT_FAILURE);
     }
+    std::cout << std::dec <<agsport<<"\n";
+    std::cout << (uint16_t)ouiport<<"\n";
     config.controller_port=(uint16_t)controllerport;
     config.listening_oui_port=(uint16_t)ouiport;
     config.listening_ags_port=(uint16_t)agsport;
@@ -83,16 +104,19 @@ int ALHINP::parse_config_file(char* file, ALHINPconfig config, ALHINPportconfig 
     uint32_t cmtsport;
     uint32_t dataport;
     uint32_t dpsport;
+    uint32_t proxyport;
     uint32_t ouinetport;    
     uint32_t ouiuserport;
     try{
         const Setting &AHLPortConfig = root["Port-config"];
-        if(!(AHLPortConfig.lookupValue("CONTROLLER_IP",cmtsport) 
-                &&AHLPortConfig.lookupValue("CONTROLLER_OF_VERSION",dataport)
-                &&AHLPortConfig.lookupValue("CONTROLLER_PORT",dpsport)
-                &&AHLPortConfig.lookupValue("LISTENING_IP_AGS",ouinetport)
-                &&AHLPortConfig.lookupValue("LISTENING_PORT_AGS",ouiuserport) ));
+        if(!     (AHLPortConfig.lookupValue("CMTS_PORT",cmtsport) 
+                &&AHLPortConfig.lookupValue("DATA_PORT",dataport)
+                &&AHLPortConfig.lookupValue("DPS_PORT",dpsport)
+                &&AHLPortConfig.lookupValue("PROXY_PORT",proxyport)                
+                &&AHLPortConfig.lookupValue("OUI_NETPORT",ouinetport)
+                &&AHLPortConfig.lookupValue("OUI_USERPORT",ouiuserport) ));
     }catch(...){
+        std::cerr << "Uops! something went wrong (PORT-CONFIG) :S" << endl;
         return(EXIT_FAILURE);
     }
     portconfig.cmts_port=(uint16_t)cmtsport;
@@ -100,14 +124,21 @@ int ALHINP::parse_config_file(char* file, ALHINPconfig config, ALHINPportconfig 
     portconfig.dps_port=(uint16_t)dpsport;
     portconfig.oui_netport=(uint16_t)ouinetport;
     portconfig.oui_userport=(uint16_t)ouiuserport;
+    portconfig.proxy_port=(uint16_t)proxyport;
     
+    string AGS_dpidtemp;
     
     try{
         const Setting &AGSconfig = root["AGS-config"];
-        if(!AGSconfig.lookupValue("AGSDPID",config.AGS_dpid));
+        AGSconfig.lookupValue("AGSDPID",AGS_dpidtemp);
+
     }catch(...){
+        std::cerr << "Uops! something went wrong (AGS-CONFIG):S" << endl;
         return(EXIT_FAILURE);
     }
+    std::stringstream ss2;
+    ss2 << std::hex << AGS_dpidtemp.c_str();
+    ss2 >> config.AGS_dpid;
     
     return (EXIT_SUCCESS);
 }
@@ -118,7 +149,7 @@ void ALHINP::handle_dpath_open(cofdpt* dpt){
         //manager->flow_test(dpt);
     }else{
         manager->OUI_connected(dpt);
-        rpc_connect_to_ctl(OFP10_VERSION,1,caddress(AF_INET,"127.0.0.1",6633));
+        rpc_connect_to_ctl(OFP10_VERSION,1,caddress(AF_INET,config.controller_ip.c_str(),config.controller_port));
         sleep(2);
     }
 
@@ -174,8 +205,6 @@ void ALHINP::handle_set_config (cofctl *ctl, cofmsg_set_config *msg){
 }
 
 void ALHINP::handle_features_request (cofctl *ctl, cofmsg_features_request *msg){
-    std::cout<<"features request received 1\n";
-    fflush(stdout);
     manager->handle_features_request (ctl,msg);
 }
 void ALHINP::handle_features_reply(cofdpt *dpt, cofmsg_features_reply *msg){
