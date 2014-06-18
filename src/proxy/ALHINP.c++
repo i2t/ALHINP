@@ -34,6 +34,9 @@ ALHINP::ALHINP(char* configfile): crofbase::crofbase((uint32_t)(1 << OFP10_VERSI
     //listen for OUI
     std::cout << "Listening on "<< config.listening_IP_oui.c_str()<<":"<<config.listening_ags_port<<" for OUIs\n";
     rpc_listen_for_dpts(caddress(AF_INET, config.listening_IP_oui.c_str(), config.listening_oui_port));
+    ///DEBUG
+    //rpc_connect_to_ctl(OFP10_VERSION,1,caddress(AF_INET,config.controller_ip.c_str(),config.controller_port));
+    ///DEBUG
     test();
 
 }
