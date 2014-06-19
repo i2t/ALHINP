@@ -21,18 +21,21 @@ Flowcache::Flowcache(const Flowcache& orig) {
 Flowcache::~Flowcache() {
 }
 uint16_t
-Flowcache::store_flow(cofmsg_flow_mod *msg){
-    cflow* temp = new cflow;
-    temp->constants.buffer_id=OFP_NO_BUFFER;
-    temp->constants.cookie=msg->get_cookie();
-    temp->cookie=msg->get_cookie();
-    temp->constants.flags=msg->get_flags();
-    temp->constants.hard_timeout=msg->get_hard_timeout();
-    temp->constants.idle_timeout=msg->get_idle_timeout();
-    temp->constants.priority=msg->get_priority();
+Flowcache::store_flow(cofmsg_flow_mod *msg, uint64_t whereask){
+    cflowentry* temp;
+    temp= new cflowentry (OFP12_VERSION);
+    temp->set_buffer_id(OFP_NO_BUFFER);
+    temp->set_cookie(msg->get_cookie());
+    temp->set_flags(msg->get_flags());
+    temp->set_hard_timeout(msg->get_hard_timeout());
+    temp->set_idle_timeout(msg->get_idle_timeout());
+    temp->set_priority(msg->get_priority());
     temp->match=msg->get_match();
     temp->actions=msg->get_actions();
-    flowcache.insert(std::make_pair(cookie_counter,temp));
+    cflow tempstruct;
+    tempstruct.fe=temp;
+    tempstruct.ask_dpid=whereask;
+    flowcache.insert(std::make_pair(cookie_counter,tempstruct));
     ++cookie_counter;
     return (cookie_counter-1);
 }
@@ -42,10 +45,10 @@ Flowcache::reg_partial_flow(uint16_t virtualcookie, uint64_t dpid){
 }
 void 
 Flowcache::deleteflow(uint64_t realcookie){
-    std::map < uint16_t /*virtual cookie*/, cflow* > ::iterator it;
+    std::map < uint16_t /*virtual cookie*/, cflow > ::iterator it;
     std::set<uint16_t>::iterator it3;
     for(it=flowcache.begin();it!=flowcache.end();++it){   
-        if(it->second->cookie==realcookie){ //FOUND!
+        if(it->second.fe->get_cookie()==realcookie){ //FOUND!
                 std::map < uint64_t /*dpid*/ , std::set <uint16_t> >::iterator it2;    
                 for(it2=dpidcache.begin();it2!=dpidcache.end();++it2){
                     it3=it2->second.find(it->first);
@@ -86,7 +89,7 @@ Flowcache::resetcache(){
  */
 bool Flowcache::flow_exists(uint16_t virtualcookie){
     
-    std::map < uint16_t /*virtual cookie*/, cflow* >::iterator it;
+    std::map < uint16_t /*virtual cookie*/, cflow >::iterator it;
     it=flowcache.find(virtualcookie);
     if(it!=flowcache.end()){
         //found!
@@ -101,24 +104,24 @@ bool Flowcache::flow_exists(uint16_t virtualcookie){
  * @param virtualcookie
  * @return 
  */
-cflow* Flowcache::get_flow(uint16_t virtualcookie){
-    std::map < uint16_t /*virtual cookie*/, cflow* >::iterator it;
+cflow Flowcache::get_flow(uint16_t virtualcookie){
+    std::map < uint16_t /*virtual cookie*/, cflow >::iterator it;
     it=flowcache.find(virtualcookie);
     return (it->second);
 }
 uint64_t Flowcache::get_dpid_for(uint64_t realcookie){
-    std::map < uint16_t /*virtual cookie*/, cflow* > ::iterator it;
+    std::map < uint16_t /*virtual cookie*/, cflow > ::iterator it;
     for (it=flowcache.begin();it!=flowcache.end();++it){
-        if(it->second->cookie==realcookie){
-            return (it->second->ask_dpid);
+        if(it->second.fe->get_cookie()==realcookie){
+            return (it->second.ask_dpid);
         }
     }
     return 0;
 }
 uint16_t  Flowcache::get_virtual_cookie(uint64_t realcookie){
-    std::map < uint16_t /*virtual cookie*/, cflow* > ::iterator it;
+    std::map < uint16_t /*virtual cookie*/, cflow > ::iterator it;
     for (it=flowcache.begin();it!=flowcache.end();++it){
-        if(it->second->cookie==realcookie){
+        if(it->second.fe->get_cookie()==realcookie){
             return (it->first);
         }
     }

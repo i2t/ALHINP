@@ -23,15 +23,13 @@ struct flow_mod_constants {
 
 struct flowmod{
     uint64_t                    dpid;
-    rofl::cofaclist*            actions;
-    rofl::cofmatch*             match;
-    flow_mod_constants*         constants;
+    cflowentry                  partial_fe;
 
 };
 
 struct flowpath{
     uint8_t longest;
-    std::map<uint64_t , flowmod*> flowmodlist;
+    std::map<uint64_t , cflowentry*> flowmodlist;
 };
 
 struct ALHINPconfig {

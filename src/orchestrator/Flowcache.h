@@ -14,23 +14,11 @@
 
 #define ALL_DPID 0xFFFFFFFF
 using namespace rofl;
-struct params {
-    uint64_t                cookie;
-    uint16_t                idle_timeout;
-    uint16_t                hard_timeout;
-    uint16_t                priority;
-    uint32_t                buffer_id;
-    uint16_t                flags;
-
-};
 
 struct cflow{
 
-    uint64_t cookie;
-    cofmatch match;
-    cofaclist actions;
     uint64_t ask_dpid;
-    params constants;
+    cflowentry* fe;
 };
 
 class ALHINP;
@@ -42,14 +30,14 @@ public:
     Flowcache(const Flowcache& orig);
     virtual ~Flowcache();
     
-    uint16_t store_flow(cofmsg_flow_mod *msg);
+    uint16_t store_flow(cofmsg_flow_mod *msg, uint64_t whereask);
     void reg_partial_flow(uint16_t virtualcookie,uint64_t dpid);
     void ask_for_flows();
     void deleteflow(uint64_t realcookie);
     void deleteflow(uint32_t outport,cofmatch match);    
     void resetcache();
     bool flow_exists(uint16_t virtualcookie);
-    cflow* get_flow(uint16_t virtualcookie);
+    cflow get_flow(uint16_t virtualcookie);
     uint64_t get_dpid_for(uint64_t realcookie);
     uint16_t  get_virtual_cookie(uint64_t realcookie);
     
@@ -58,7 +46,7 @@ private:
     ALHINP *proxy;
     uint16_t                    cookie_counter;
     std::map < uint64_t /*dpid*/ , std::set <uint16_t> /*virtual cookie*/ > dpidcache;
-    std::map < uint16_t /*virtual cookie*/, cflow* > flowcache;
+    std::map < uint16_t /*virtual cookie*/, cflow > flowcache;
 };
 
 #endif	/* FLOWCACHE_H */
