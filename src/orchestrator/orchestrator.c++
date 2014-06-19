@@ -636,33 +636,29 @@ void      orchestrator::flow_mod_add(cofctl *ctl, cofmsg_flow_mod *msg){
     
     std::cout<<"Iteration over dpids... \n";    
     for(it=flowss.flowmodlist.begin();it!=flowss.flowmodlist.end();++it){
-        std::cout<<"Conforming 0\n";
-        cofinlist list (OFP12_VERSION);
-        std::cout<<"Conforming 1 \n";
-        list.next()=cofinst_apply_actions(OFP12_VERSION);
-        std::cout<<"Conforming FLOW_MOD for"<<(*it).first <<"\n";
-        list.back().actions=(*it->second->actions);
+        std::cout<<"Conforming FLOW_MOD for "<<(*it).first <<"\n";
         if(input_wildcarded==false){
             std::cout<<"Registering partial Flow... \n";
             proxy->flowcache->reg_partial_flow(flow_id,it->first);
         }
+        //debug printing..
+        std::cout<<proxy->dpt_find(it->first)->get_dpid_s()<<"\n";
+        ////////////////
         std::cout<<"Sending Flow... \n";
-        proxy->send_flow_mod_message(
-		proxy->dpt_find(it->first),
-		(*it->second->match),
-		it->second->constants->cookie,
-		flow_mask,
-		it->second->constants->table_id,
-		OFPFC_ADD,
-		it->second->constants->idle_timeout,
-		it->second->constants->hard_timeout,
-		it->second->constants->priority,
-		OFP_NO_BUFFER,
-		0,
-		0,
-		it->second->constants->flags,
-		list);
+        cflowentry fe(OFP12_VERSION);
+        fe.instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+        fe.instructions.back().actions=(*it->second->actions);
+        //fe.match=(*it->second->match);
         
+        fe.set_cookie(it->second->constants->cookie);
+        fe.set_command(OFPFC_ADD);
+        fe.set_buffer_id(OFP_NO_BUFFER);
+        fe.set_table_id(it->second->constants->table_id);
+        fe.set_priority(it->second->constants->priority);
+        fe.set_hard_timeout(it->second->constants->hard_timeout);
+        fe.set_idle_timeout(it->second->constants->idle_timeout);
+        proxy->send_flow_mod_message(
+		proxy->dpt_find(it->first),fe);
     }
     if(input_wildcarded==true){
         proxy->flowcache->reg_partial_flow(flow_id,ALL_DPID);
@@ -704,7 +700,7 @@ void      orchestrator::handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *m
     delete msg;
     return;
 }
-void  orchestrator::fill_flowpath(flowpath flows,cofmatch* common_match,cofaclist aclist,uint32_t inport, uint32_t outport, uint8_t flowtype){
+void  orchestrator::fill_flowpath(flowpath &flows,cofmatch* common_match,cofaclist aclist,uint32_t inport, uint32_t outport, uint8_t flowtype){
    
     uint64_t outdpid =proxy->virtualizer->get_own_dpid(outport);  
     uint64_t indpid =proxy->virtualizer->get_own_dpid(inport); 
@@ -798,11 +794,11 @@ void  orchestrator::fill_flowpath(flowpath flows,cofmatch* common_match,cofaclis
                 
                 flows.flowmodlist[outdpid]->constants->table_id=1; //table AGS
 
-                flows.flowmodlist[outdpid]->match = common_match;
+                (*flows.flowmodlist[outdpid]->match) = (*common_match);
                 flows.flowmodlist[outdpid]->match->set_in_port(proxy->portconfig.cmts_port);
                 flows.flowmodlist[outdpid]->match->set_metadata(proxy->virtualizer->get_vlan_tag(indpid,outdpid));
                 
-                flows.flowmodlist[outdpid]->actions=&aclist;              
+                (*flows.flowmodlist[outdpid]->actions)=aclist;              
                 flows.flowmodlist[outdpid]->actions->next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport));                    
                 
                 flows.longest=2;
@@ -1099,7 +1095,7 @@ cofmatch* orchestrator::process_matching(cofmsg_flow_mod *msg, uint8_t ofversion
     } 
     return common_match;
 }
-bool      orchestrator::process_action_list(flowpath flows,cofmatch* common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport,uint8_t nw_proto, uint8_t message){
+bool      orchestrator::process_action_list(flowpath &flows,cofmatch* common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport,uint8_t nw_proto, uint8_t message){
     fflush(stdout);
     cofinlist instrlist;
     cofaclist::iterator it;
@@ -1114,7 +1110,7 @@ bool      orchestrator::process_action_list(flowpath flows,cofmatch* common_matc
         std::cout<<"Processing 1.0 actions..\n";
         instrlist.next()=cofinst_apply_actions(OFP12_VERSION);
         
-        flowpath flows_temp;
+        
         for (it = aclist.begin(); it != aclist.end(); ++it){
             try{
                 std::cout<< (int)htobe16((*it).oac_oacu.oacu_header->type)<<"\n";
@@ -1133,12 +1129,10 @@ bool      orchestrator::process_action_list(flowpath flows,cofmatch* common_matc
                         std::cout<<"Flowtype "<< (int)flowtype<<" processing...\n";
                         if(message==OFPT10_FLOW_MOD){
                             std::cout<<"Filling flow path processing...\n";
-                            fill_flowpath(flows_temp,common_match,instrlist.back().actions, inport,htobe16((*it).oac_oacu.oacu_10output->port),flowtype);
-                            flows=flows_temp;
+                            fill_flowpath(flows,common_match,instrlist.back().actions, inport,htobe16((*it).oac_oacu.oacu_10output->port),flowtype);
                             if(flows.flowmodlist.empty())
                                  std::cout<<"is emptyGG\n";
-                            if(flows_temp.flowmodlist.empty())
-                                 std::cout<<"is emptyAA\n";
+
                         }if(message==OFPT10_PACKET_OUT){
                             fill_packetouts(flows,instrlist.back().actions, inport,htobe16((*it).oac_oacu.oacu_10output->port),flowtype);
                         }

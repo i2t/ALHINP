@@ -66,8 +66,8 @@ public:
     void flow_mod_delete(cofctl *ctl, cofmsg_flow_mod *msg, bool strict);
 cofmatch* process_matching(cofmsg_flow_mod *msg, uint8_t ofversion = OFP12_VERSION);
 cofmatch* process_matching(cofmatch match, uint8_t ofversion = OFP12_VERSION);
-    bool process_action_list(flowpath flows,cofmatch* common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport, uint8_t nw_proto, uint8_t message);
-    void fill_flowpath(flowpath flows,cofmatch* common_match, cofaclist aclist,uint32_t inport,uint32_t outport, uint8_t flowtype);
+    bool process_action_list(flowpath &flows,cofmatch* common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport, uint8_t nw_proto, uint8_t message);
+    void fill_flowpath(flowpath &flows,cofmatch* common_match, cofaclist aclist,uint32_t inport,uint32_t outport, uint8_t flowtype);
 
     
     void dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg); 
