@@ -28,6 +28,7 @@ struct flowmod{
 };
 
 struct flowpath{
+    uint64_t whereask;
     uint8_t longest;
     std::map<uint64_t , cflowentry*> flowmodlist;
 };
