@@ -1,8 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* 
  * File:   main.cpp
- * Author: victor
- *
  * Created on 10 de octubre de 2013, 16:27
+ * Author: victor Fuentes
+ * University of the Basque country / Universidad del Pais Vasco (UPV/EHU)
+ * I2T Research Group
  */
 
 #include <cstdlib>

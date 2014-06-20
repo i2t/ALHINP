@@ -1,8 +1,12 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* 
  * File:   orchestrator.h
- * Author: victor
- *
- * Created on 26 de mayo de 2014, 11:06
+ * Author: victor Fuentes
+ * University of the Basque country / Universidad del Pais Vasco (UPV/EHU)
+ * I2T Research Group
  */
 
 #ifndef ORCHESTRATOR_H
@@ -65,7 +69,7 @@ public:
     void flow_mod_modify(cofctl *ctl, cofmsg_flow_mod *msg, bool strict);
     void flow_mod_delete(cofctl *ctl, cofmsg_flow_mod *msg, bool strict);
 cofmatch process_matching(cofmsg_flow_mod *msg, uint8_t ofversion = OFP10_VERSION);
-cofmatch* process_matching(cofmatch match, uint8_t ofversion = OFP12_VERSION);
+cofmatch* process_matching(cofmatch match, uint8_t ofversion = OFP10_VERSION);
     bool process_action_list(flowpath &flows,cofmatch common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport, uint8_t nw_proto, uint8_t message);
     void fill_flowpath(flowpath &flows,cofmatch common_match, cofaclist aclist,uint32_t inport,uint32_t outport, uint8_t flowtype);
 

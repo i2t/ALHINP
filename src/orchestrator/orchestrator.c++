@@ -1,8 +1,12 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* 
  * File:   orchestrator.c++
- * Author: victor
- * 
- * Created on 26 de mayo de 2014, 11:06
+ * Author: victor Fuentes
+ * University of the Basque country / Universidad del Pais Vasco (UPV/EHU)
+ * I2T Research Group
  */
 
 #include <rofl/common/crofbase.h>
@@ -699,7 +703,7 @@ void      orchestrator::handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *m
  * @param ofversion
  * @return 
  */
-cofmatch* orchestrator::process_matching(cofmatch match, uint8_t ofversion = OFP10_VERSION){
+cofmatch* orchestrator::process_matching(cofmatch match, uint8_t ofversion){
     cofmatch* common_match = new cofmatch(OFP12_VERSION);
     
     if(ofversion==OFP12_VERSION){

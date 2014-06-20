@@ -1,8 +1,12 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* 
  * File:   CMTS_handler.cpp
- * Author: victor
- * 
- * Created on 28 de abril de 2014, 17:37
+ * Author: victor Fuentes
+ * University of the Basque country / Universidad del Pais Vasco (UPV/EHU)
+ * I2T Research Group
  */
 
 #include "CMTS_handler.h"
