@@ -15,7 +15,7 @@
 #include <sys/wait.h>
 #include <rofl/platform/unix/cunixenv.h>
 #include <rofl/common/ciosrv.h>
-#include "src/proxy/ALHINP.h"
+#include "proxy/ALHINP.h"
 
 using namespace rofl;
 
@@ -68,3 +68,4 @@ int main(int argc, char** argv){
 	
 	exit(EXIT_SUCCESS);
 }
+
