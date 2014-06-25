@@ -1,0 +1,98 @@
+## -*- Makefile -*-
+##
+## User: victor
+## Time: 25-jun-2014 10:45:12
+## Makefile created by Oracle Solaris Studio.
+##
+## This file is generated automatically.
+##
+
+
+#### Compiler and tool definitions shared by all build targets #####
+CCC = g++
+CXX = g++
+BASICOPTS = 
+CCFLAGS = $(BASICOPTS)
+CXXFLAGS = $(BASICOPTS)
+CCADMIN = 
+
+
+# Define the target directories.
+TARGETDIR_ALHINP=Build
+
+
+all: $(TARGETDIR_ALHINP)/ALHINP
+
+## Target: ALHINP
+OBJS_ALHINP =  \
+	$(TARGETDIR_ALHINP)/main.o \
+	$(TARGETDIR_ALHINP)/translator.o \
+	$(TARGETDIR_ALHINP)/ALHINP.o \
+	$(TARGETDIR_ALHINP)/Flowcache.o \
+	$(TARGETDIR_ALHINP)/orchestrator.o \
+	$(TARGETDIR_ALHINP)/DOCSISdriver.o \
+	$(TARGETDIR_ALHINP)/CMTS_handler.o \
+	$(TARGETDIR_ALHINP)/discovery.o
+SYSLIBS_ALHINP = -lpthread -ldl 
+USERLIBS_ALHINP = -lpthread -lafa -lrofl -lrofl_pipeline `pkg-config --libs libconfig++` $(SYSLIBS_ALHINP) 
+DEPLIBS_ALHINP =        
+LDLIBS_ALHINP = $(USERLIBS_ALHINP)
+
+
+# Link or archive
+$(TARGETDIR_ALHINP)/ALHINP: $(TARGETDIR_ALHINP) $(OBJS_ALHINP) $(DEPLIBS_ALHINP)
+	$(LINK.cc) $(CCFLAGS_ALHINP) $(CPPFLAGS_ALHINP) -o $@ $(OBJS_ALHINP) $(LDLIBS_ALHINP)
+
+
+# Compile source files into .o files
+$(TARGETDIR_ALHINP)/main.o: $(TARGETDIR_ALHINP) src/main.cpp
+	$(COMPILE.cc) $(CCFLAGS_ALHINP) $(CPPFLAGS_ALHINP) -o $@ src/main.cpp
+
+$(TARGETDIR_ALHINP)/translator.o: $(TARGETDIR_ALHINP) src/translator/translator.cpp
+	$(COMPILE.cc) $(CCFLAGS_ALHINP) $(CPPFLAGS_ALHINP) -o $@ src/translator/translator.cpp
+
+$(TARGETDIR_ALHINP)/ALHINP.o: $(TARGETDIR_ALHINP) src/proxy/ALHINP.c++
+	$(COMPILE.cc) $(CCFLAGS_ALHINP) $(CPPFLAGS_ALHINP) -o $@ src/proxy/ALHINP.c++
+
+$(TARGETDIR_ALHINP)/Flowcache.o: $(TARGETDIR_ALHINP) src/orchestrator/Flowcache.c++
+	$(COMPILE.cc) $(CCFLAGS_ALHINP) $(CPPFLAGS_ALHINP) -o $@ src/orchestrator/Flowcache.c++
+
+$(TARGETDIR_ALHINP)/orchestrator.o: $(TARGETDIR_ALHINP) src/orchestrator/orchestrator.c++
+	$(COMPILE.cc) $(CCFLAGS_ALHINP) $(CPPFLAGS_ALHINP) -o $@ src/orchestrator/orchestrator.c++
+
+$(TARGETDIR_ALHINP)/DOCSISdriver.o: $(TARGETDIR_ALHINP) src/DOCSIS/DOCSISdriver.c++
+	$(COMPILE.cc) $(CCFLAGS_ALHINP) $(CPPFLAGS_ALHINP) -o $@ src/DOCSIS/DOCSISdriver.c++
+
+$(TARGETDIR_ALHINP)/CMTS_handler.o: $(TARGETDIR_ALHINP) src/DOCSIS/CMTS/CMTS_handler.cpp
+	$(COMPILE.cc) $(CCFLAGS_ALHINP) $(CPPFLAGS_ALHINP) -o $@ src/DOCSIS/CMTS/CMTS_handler.cpp
+
+$(TARGETDIR_ALHINP)/discovery.o: $(TARGETDIR_ALHINP) src/discovery/discovery.c++
+	$(COMPILE.cc) $(CCFLAGS_ALHINP) $(CPPFLAGS_ALHINP) -o $@ src/discovery/discovery.c++
+
+
+
+#### Clean target deletes all generated files ####
+clean:
+	rm -f \
+		$(TARGETDIR_ALHINP)/ALHINP \
+		$(TARGETDIR_ALHINP)/main.o \
+		$(TARGETDIR_ALHINP)/translator.o \
+		$(TARGETDIR_ALHINP)/ALHINP.o \
+		$(TARGETDIR_ALHINP)/Flowcache.o \
+		$(TARGETDIR_ALHINP)/orchestrator.o \
+		$(TARGETDIR_ALHINP)/DOCSISdriver.o \
+		$(TARGETDIR_ALHINP)/CMTS_handler.o \
+		$(TARGETDIR_ALHINP)/discovery.o
+	$(CCADMIN)
+	rm -f -r $(TARGETDIR_ALHINP)
+
+
+# Create the target directory (if needed)
+$(TARGETDIR_ALHINP):
+	mkdir -p $(TARGETDIR_ALHINP)
+
+
+# Enable dependency checking
+.KEEP_STATE:
+.KEEP_STATE_FILE:.make.state.GNU-amd64-Linux
+

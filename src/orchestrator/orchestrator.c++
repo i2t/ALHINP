@@ -540,69 +540,79 @@ void      orchestrator::process_packet_out(uint32_t inport,cofaclist list, uint8
     process_action_list(packetouts,(cofmatch)0,list, OFP12_VERSION, inport,0xFF,OFPT10_PACKET_OUT);
     for(it=packetouts.flowmodlist.begin();it!=packetouts.flowmodlist.end();++it){
 
-//    proxy->send_packet_out_message(proxy->dpt_find(it->first),
-//            (uint32_t)OFP12_NO_BUFFER,
-//            inport,
-//            (*it->second->actions),
-//            data,
-//            datalen);
+    proxy->send_packet_out_message(proxy->dpt_find(it->first),
+            (uint32_t)OFP12_NO_BUFFER,
+            inport,
+            it->second->instructions.back().actions,
+            data,
+            datalen);
     }
     
 }
 void      orchestrator::fill_packetouts(flowpath flows,cofaclist aclist,uint32_t inport, uint32_t outport, uint8_t flowtype){
     
-//
-//    uint64_t outdpid;
-//    proxy->virtualizer->get_own_dpid(outport);  
-//    if(inport=OFPP10_NONE){
-//        if(outport=OFPP10_ALL){
-//            return;
-//        }
-//        uint64_t indpid =proxy->virtualizer->get_own_dpid(outport); 
-//        flows.flowmodlist.insert(std::make_pair(indpid,new flowmod)); //INGRESS 
-//        flows.flowmodlist[indpid]->actions= new cofaclist (OFP12_VERSION);
-//        flows.flowmodlist[indpid]->actions->next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport));  
-//    }
-//    uint64_t indpid =proxy->virtualizer->get_own_dpid(inport); 
-//    switch(flowtype){
-//        case LOCAL:{
-//            std::map<uint64_t , flowmod*>::iterator it;
-//            outdpid=indpid;
-//            it=flows.flowmodlist.find(outdpid);
-//            if(it->first!=indpid){
-//                //doesn't exist!!
-//                flows.flowmodlist.insert(std::make_pair(indpid,new flowmod)); //INGRESS 
-//                flows.flowmodlist[indpid]->actions= new cofaclist (OFP12_VERSION);
-//                flows.flowmodlist[indpid]->actions=&aclist;
-//            }
-//            cofaclist::iterator iter;
-//            for(iter=aclist.begin();iter!=aclist.end();++iter){
-//                flows.flowmodlist[indpid]->actions->next()=(*iter);
-//            }
-//            flows.flowmodlist[indpid]->actions->next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport));  
-//            break;
-//            
-//        }
-//        default:{
-//            std::map<uint64_t , flowmod*>::iterator it;
-//            outdpid=proxy->virtualizer->get_own_dpid(outport);
-//            it=flows.flowmodlist.find(outdpid);
-//            if(it->first!=indpid){
-//                //doesn't exist!!
-//            flows.flowmodlist.insert(std::make_pair(indpid,new flowmod)); //INGRESS 
-//            flows.flowmodlist[indpid]->actions= new cofaclist (OFP12_VERSION);
-//            flows.flowmodlist[indpid]->actions=&aclist; 
-//            }
-//            //copy new actions
-//            cofaclist::iterator iter;
-//            for(iter=aclist.begin();iter!=aclist.end();++iter){
-//                flows.flowmodlist[outdpid]->actions->next()=(*iter);
-//            }
-//            flows.flowmodlist[outdpid]->actions->next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport));  
-//            break;
-//        }
-//        
-//    }
+
+    uint64_t outdpid;
+    proxy->virtualizer->get_own_dpid(outport);  
+    if(outport==OFPP10_ALL){
+        return;
+        //send error;
+    }
+    if(inport==OFPP10_NONE){ //for DROP rule
+
+        uint64_t indpid =proxy->virtualizer->get_own_dpid(outport); 
+        cflowentry* temp;
+        temp = new cflowentry (OFP12_VERSION);
+        flows.flowmodlist.insert(std::make_pair(indpid,temp)); //INGRESS 
+        flows.flowmodlist[indpid]->instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+        flows.flowmodlist[indpid]->instructions.back().actions.next()=cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport)); 
+        return;
+        
+    }
+    uint64_t indpid =proxy->virtualizer->get_own_dpid(inport); 
+    switch(flowtype){
+        case LOCAL:{
+            std::map<uint64_t , cflowentry*>::iterator it;
+            outdpid=indpid;
+            it=flows.flowmodlist.find(outdpid);
+            if(it->first!=indpid){
+                //doesn't exist!!
+                cflowentry* temp;
+                temp = new cflowentry (OFP12_VERSION);
+                flows.flowmodlist.insert(std::make_pair(indpid,temp)); //INGRESS 
+                flows.flowmodlist[indpid]->instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                flows.flowmodlist[indpid]->instructions.back().actions= aclist;
+            }
+            cofaclist::iterator iter;
+            for(iter=aclist.begin();iter!=aclist.end();++iter){
+                flows.flowmodlist[indpid]->instructions.back().actions.next()=(*iter); //append actions;
+            }
+            flows.flowmodlist[indpid]->instructions.back().actions.next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport));  
+            break;
+            
+        }
+        default:{
+            std::map<uint64_t , cflowentry*>::iterator it;
+            outdpid=proxy->virtualizer->get_own_dpid(outport);
+            it=flows.flowmodlist.find(outdpid);
+            if(it->first!=outdpid){
+                //doesn't exist!!
+                cflowentry* temp2;
+                temp2 = new cflowentry (OFP12_VERSION);
+                flows.flowmodlist.insert(std::make_pair(outdpid,temp2)); //INGRESS 
+                flows.flowmodlist[outdpid]->instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                flows.flowmodlist[outdpid]->instructions.back().actions= aclist;
+            }
+            //copy new actions
+            cofaclist::iterator iter;
+            for(iter=aclist.begin();iter!=aclist.end();++iter){
+                flows.flowmodlist[outdpid]->instructions.back().actions.next()=(*iter); //append actions;
+            }
+            flows.flowmodlist[indpid]->instructions.back().actions.next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport)); 
+            break;
+        }
+        
+    }
     
 }
 
@@ -675,6 +685,7 @@ void      orchestrator::handle_flow_removed (cofdpt *dpt, cofmsg_flow_removed *m
     if(exist==false){
         delete msg;
         return;
+        //message has already been sent 
     }else{
         cflow flow;
         flow = proxy->flowcache->get_flow(virtualcookie);
