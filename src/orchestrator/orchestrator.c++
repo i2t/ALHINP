@@ -1111,9 +1111,7 @@ void      orchestrator::fill_flowpath(flowpath &flows,cofmatch common_match,cofa
                 flows.flowmodlist[outdpid]->match.set_in_port(proxy->portconfig.cmts_port);
                 flows.flowmodlist[outdpid]->match.set_metadata(proxy->virtualizer->get_vlan_tag(indpid,outdpid));
                 flows.flowmodlist[outdpid]->instructions.back().actions=aclist;              
-                flows.flowmodlist[outdpid]->actions.next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport));                    
-                //std::cout<<"debugging: "<<flows.flowmodlist[indpid]->c_str()<<"\n\n";
-                //std::cout<<"debugging: "<<flows.flowmodlist[outdpid]->c_str()<<"\n";
+                flows.flowmodlist[outdpid]->instructions.back().actions.next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport));                    
                 flows.whereask=indpid;
                 flows.longest=2;
                 break;

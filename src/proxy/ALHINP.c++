@@ -4,7 +4,7 @@
 
 /* 
  * File:   ALHINP.c++
- * Author: victor Fuentes
+ * Author: Victor Fuentes
  * University of the Basque country / Universidad del Pais Vasco (UPV/EHU)
  * I2T Research Group
  */
@@ -27,22 +27,30 @@ ALHINP::ALHINP(char* configfile): crofbase::crofbase((uint32_t)(1 << OFP10_VERSI
     //listen for AGS
     
     if(parse_config_file(configfile)!=0){
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     discover= new discovery(this);
     manager= new orchestrator(this);
     flowcache= new Flowcache(this);
     virtualizer = new translator (this);
-    std::cout << "Listening on "<< config.listening_IP_ags.c_str() <<":"<<(uint16_t) config.listening_ags_port<<" for AGS\n";
+    
+    //Listen for AGS
+    std::cout << "Listening on "<< config.listening_IP_ags.c_str() <<":"<< std::dec <<(uint16_t) config.listening_ags_port<<" for AGS\n";
+    try{
     rpc_listen_for_dpts(caddress(AF_INET, config.listening_IP_ags.c_str(),config.listening_ags_port));
+    }catch(...){
+        std::cout<<"Unable to Listen for AGS\n";
+        exit(EXIT_FAILURE);
+    }
     //listen for OUI
     std::cout << "Listening on "<< config.listening_IP_oui.c_str()<<":"<<config.listening_ags_port<<" for OUIs\n";
+    try{
     rpc_listen_for_dpts(caddress(AF_INET, config.listening_IP_oui.c_str(), config.listening_oui_port));
-    ///DEBUG
-    //rpc_connect_to_ctl(OFP10_VERSION,1,caddress(AF_INET,config.controller_ip.c_str(),config.controller_port));
-    ///DEBUG
-    test();
-
+    }catch(...){
+        std::cout<<"Unable to Listen for OUIS\n";
+        exit(EXIT_FAILURE);
+    }
+    //test();
 }
 ALHINP::ALHINP(const ALHINP& orig) {
 }
@@ -67,7 +75,7 @@ int ALHINP::parse_config_file(char* file){
     string desc;
     try{
         string name = cfg.lookup("name");
-        cout << "Store name: " << name << endl << endl;
+        //cout << "Store name: " << name << endl << endl;
         string temp1 = cfg.lookup("desc");
         string temp2 = cfg.lookup("dpid");
         tempdpid = temp2;
@@ -106,8 +114,8 @@ int ALHINP::parse_config_file(char* file){
         std::cerr << "Uops! something went wrong (ALHINP-config) :S" << endl;
         return(EXIT_FAILURE);
     }
-    std::cout << std::dec <<agsport<<"\n";
-    std::cout << (uint16_t)ouiport<<"\n";
+    //std::cout << std::dec <<agsport<<"\n";
+    //std::cout << (uint16_t)ouiport<<"\n";
     config.controller_port=(uint16_t)controllerport;
     config.listening_oui_port=(uint16_t)ouiport;
     config.listening_ags_port=(uint16_t)agsport;
@@ -161,6 +169,7 @@ void ALHINP::handle_dpath_open(cofdpt* dpt){
         manager->AGS_connected(dpt);
     }else{
         manager->OUI_connected(dpt);
+        //This not should be like this, the controller should verify that ports for Flow Mods exist
         std::cout<<"Trying to connect controller @ "<< config.controller_ip.c_str() << "\n";
         rpc_connect_to_ctl(OFP10_VERSION,1,caddress(AF_INET,config.controller_ip.c_str(),config.controller_port));
         
