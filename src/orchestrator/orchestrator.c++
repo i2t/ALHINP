@@ -22,6 +22,8 @@
 #define C_TAG 0x8100
 #define S_TAG 0x88A8
 
+#define takefromoutput 0xAAAAAAAA
+
 
 orchestrator::orchestrator(ALHINP *ofproxy) {
     proxy=ofproxy;
@@ -290,17 +292,17 @@ void      orchestrator::dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg){
 
 /************************  FEATURES REQUEST / REPLY ***********************************/
 void      orchestrator::handle_features_request (cofctl *ctl, cofmsg_features_request *msg){
-    std::cout<<"features_request received\n";
-    fflush(stdout);
+    //std::cout<<"features_request received\n";
+    //fflush(stdout);
     uint32_t xid = msg->get_xid();
     std::set<cofdpt*>::iterator dpt_it2;
     for (dpt_it2 = proxy->ofdpt_set.begin(); dpt_it2 != proxy->ofdpt_set.end(); ++dpt_it2) {
-        std::cout<<"sending FEATURES REQUEST to"<< (*dpt_it2)->get_dpid_s()<<"\n";
+        //std::cout<<"sending FEATURES REQUEST to"<< (*dpt_it2)->get_dpid_s()<<"\n";
         proxy->send_features_request((*dpt_it2));
         ++feat_req_sent;
     }
     feat_req_last_xid=xid;
-    std::cout<<"reg timer\n";
+    //std::cout<<"reg timer\n";
     proxy->register_timer(FEATURES_REQ,FEATURES_REQ_TIMER);
 
     delete msg;
@@ -537,9 +539,11 @@ void      orchestrator::handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg){
 void      orchestrator::process_packet_out(uint32_t inport,cofaclist list, uint8_t *data,size_t datalen){
     
     flowpath packetouts;
-    std::cout<<"packeout received\n";
+    std::cout<<"packeout Processing\n";
+    cofmatch common_match (OFP12_VERSION);
+    process_action_list(packetouts,common_match,list, OFP10_VERSION, inport,0xFF,OFPT10_PACKET_OUT);
+    std::cout<<"packeout Processing completed\n";
     std::map<uint64_t , cflowentry*>::iterator it;
-    process_action_list(packetouts,(cofmatch)0,list, OFP12_VERSION, inport,0xFF,OFPT10_PACKET_OUT);
     for(it=packetouts.flowmodlist.begin();it!=packetouts.flowmodlist.end();++it){
 
     proxy->send_packet_out_message(proxy->dpt_find(it->first),
@@ -549,6 +553,7 @@ void      orchestrator::process_packet_out(uint32_t inport,cofaclist list, uint8
             data,
             datalen);
     }
+    
     
 }
 void      orchestrator::fill_packetouts(flowpath &flows,cofaclist aclist,uint32_t inport, uint32_t outport, uint8_t flowtype){
@@ -561,6 +566,7 @@ void      orchestrator::fill_packetouts(flowpath &flows,cofaclist aclist,uint32_
         //send error;
     }
     if(inport==OFPP10_NONE){ //for DROP rule
+        std::cout<<"taking DPID to send from OUTPUT\n";
 
         uint64_t indpid =proxy->virtualizer->get_own_dpid(outport); 
         cflowentry* temp;
@@ -911,19 +917,27 @@ cofmatch  orchestrator::process_matching(cofmsg_flow_mod *msg, uint8_t ofversion
 bool      orchestrator::process_action_list(flowpath &flows,cofmatch common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport,uint8_t nw_proto, uint8_t message){
     flowpath flowlist;
     flowlist.longest=0;
+    std::cout<<"1\n";
     cofinlist instrlist;
-    cofmatch filling_match = common_match;
+    std::cout<<"2\n";
+    cofmatch filling_match (OFP12_VERSION,OFPMT_OXM);
+    std::cout<<"3\n";
+    if(message!=OFPT10_PACKET_OUT)
+        filling_match = common_match;
     cofaclist::iterator it;
+    std::cout<<"4\n";
     bool anyoutput=false;
+    std::cout<<"5\n";
     uint64_t in_dpid=0; 
-    //std::cout<<"Processing actions..\n";
+    std::cout<<"Processing actions..\n";
     fflush(stdout);
     
     if(inport!=OFPP10_NONE)
         in_dpid = proxy->virtualizer->get_own_dpid(inport);
-
+    else
+        in_dpid = takefromoutput;
     if (ofversion==OFP10_VERSION){   
-        //std::cout<<"Processing 1.0 actions..\n";
+        std::cout<<"Processing 1.0 actions..\n";
         instrlist.next()=cofinst_apply_actions(OFP12_VERSION);
         
         
@@ -934,7 +948,7 @@ bool      orchestrator::process_action_list(flowpath &flows,cofmatch common_matc
                     
                     case OFP10AT_OUTPUT:{ //overwrite corresponding virtual port w/ real port
                         anyoutput=true;
-                        //std::cout<<"SET_OUTPORT: "<< (uint16_t)htobe16((*it).oac_oacu.oacu_10output->port) <<"\n";
+                        std::cout<<"SET_OUTPORT: "<< (uint16_t)htobe16((*it).oac_oacu.oacu_10output->port) <<"\n";
                         uint8_t flowtype;
                         if(htobe16((*it).oac_oacu.oacu_10output->port)<OFPP10_MAX){
                             flowtype = typeflow(in_dpid,proxy->virtualizer->get_own_dpid(htobe16((*it).oac_oacu.oacu_10output->port)));
@@ -1202,6 +1216,8 @@ void      orchestrator::fill_flowpath(flowpath &flows,cofmatch common_match,cofa
     
 }
 uint8_t   orchestrator::typeflow(uint64_t src_dpid,uint64_t dst_dpid){
+    if(src_dpid==takefromoutput)
+        return LOCAL;
     if(src_dpid==proxy->config.AGS_dpid){
         if(src_dpid==dst_dpid)
             return LOCAL;
