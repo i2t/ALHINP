@@ -272,6 +272,7 @@ void ALHINP::handle_packet_out (cofctl *ctl, cofmsg_packet_out *msg){
 }
 
 void ALHINP::handle_barrier_request(cofctl *ctl, cofmsg_barrier_request *msg){
+    
     send_barrier_reply(ctl,msg->get_xid());
 }
 
@@ -292,8 +293,8 @@ void ALHINP::handle_desc_stats_request (cofctl *ctl, cofmsg_desc_stats_request *
                     "alpha 0.1",
                     "1234567890",
                     "DOCSIS ALHINP");
-    send_desc_stats_reply(controller,msg->get_xid(),stats);
-    cofmsg_desc_stats_request request;
+    send_desc_stats_reply(controller,msg->get_xid(),stats,false);
+    //cofmsg_desc_stats_request request;
     delete msg;
     return;
 }
