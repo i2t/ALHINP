@@ -28,7 +28,24 @@ enum flowtype {
     DOWNSTREAM = 1,
     UPSTREAM = 2, 
     LOCAL = 3,
-    BCLIENTS = 4
+    BCLIENTS = 4,
+    ALL =5
+};
+
+enum flowmodtype{
+    WCtoALL = 1,
+    WCtoSPECIAL = 2,
+    WCtoAGS = 3,
+    error = 4,
+    AGStoCLI = 5,
+    CLItoAGS = 6,
+    CLItoCLI = 7,
+    AGStoALL = 8,
+    CLItoALL = 9,
+    VirtPorttoSPECIAL = 10,
+    DROP = 11,
+    WDROP = 12,
+    WCtoCLIENT = 13
 };
 
 

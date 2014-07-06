@@ -112,7 +112,7 @@ private:
 //  virtual void handle_table_stats_reply (cofdpt *dpt, cofmsg_table_stats_reply *msg);
 
 //  virtual void handle_stats_request(cofctl* ctl, cofmsg_stats_request *msg);    
-//  virtual void handle_stats_reply (cofdpt *dpt, cofmsg_stats_reply *msg); 
+    virtual void handle_stats_reply (cofdpt *dpt, cofmsg_stats_reply *msg); 
 
     void test();
 };

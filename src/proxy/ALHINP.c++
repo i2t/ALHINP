@@ -281,7 +281,10 @@ void ALHINP::handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *
     
 }
 void ALHINP::handle_flow_stats_reply (cofdpt *dpt, cofmsg_flow_stats_reply *msg){
-    manager->handle_flow_stats_reply (dpt, msg);
+    std:cout<<"stats_received\n";
+    delete msg;
+    return;
+    //manager->handle_flow_stats_reply (dpt, msg);
 }
 
 void ALHINP::handle_desc_stats_request (cofctl *ctl, cofmsg_desc_stats_request *msg){
@@ -309,6 +312,11 @@ void ALHINP::handle_port_stats_request (cofctl *ctl, cofmsg_port_stats_request *
 }
 void ALHINP::handle_port_stats_reply   (cofdpt *dpt, cofmsg_port_stats_reply *msg){
     manager->handle_port_stats_reply (dpt, msg);
+}
+void ALHINP::handle_stats_reply (cofdpt *dpt, cofmsg_stats_reply *msg){
+    std:cout<<"stats_received____\n";
+    delete msg;
+    return;
 }
 void ALHINP::test(){
     

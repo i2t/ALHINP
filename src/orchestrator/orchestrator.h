@@ -69,10 +69,11 @@ public:
     void flow_mod_modify(cofctl *ctl, cofmsg_flow_mod *msg, bool strict);
     void flow_mod_delete(cofctl *ctl, cofmsg_flow_mod *msg, bool strict);
 cofmatch process_matching(cofmsg_flow_mod *msg, uint8_t ofversion = OFP10_VERSION);
-cofmatch* process_matching(cofmatch match, uint8_t ofversion = OFP10_VERSION);
+cofmatch process_matching(cofmatch match, uint8_t ofversion = OFP10_VERSION);
     bool process_action_list(flowpath &flows,cofmatch common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport, uint8_t nw_proto, uint8_t message);
+    bool process_action_list2(flowpath &flows,cofmatch common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport, uint8_t nw_proto, uint8_t message);
     void fill_flowpath(flowpath &flows,cofmatch common_match, cofaclist aclist,uint32_t inport,uint32_t outport, uint8_t flowtype);
-
+    void fill_flowpath2(flowpath &flows,cofmatch common_match, cofaclist aclist,uint32_t inport,uint32_t outport, uint8_t flowtype);
     
     void dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg); 
     
@@ -81,7 +82,7 @@ cofmatch* process_matching(cofmatch match, uint8_t ofversion = OFP10_VERSION);
     void fill_packetouts(flowpath &flows,cofaclist aclist,uint32_t inport, uint32_t outport, uint8_t flowtype);
     void flow_test(cofdpt* dpt);
     uint8_t typeflow(uint64_t src_dpid,uint64_t dst_dpid);
-    
+    uint8_t typeflow2(uint32_t inport,uint32_t outport);
     void handle_flow_stats_request (cofctl *ctl, cofmsg_flow_stats_request *msg);
     void handle_flow_stats_reply (cofdpt *dpt, cofmsg_flow_stats_reply *msg);
     
