@@ -836,6 +836,7 @@ cofmatch  orchestrator::process_matching(cofmatch match, uint8_t ofversion){
         }catch(eOFmatchNotFound& e){}
 
         try{ //OF 1.0
+
             if(match.get_nw_dst_value().get_ipv4_addr()!=0){
             common_match.set_ipv4_dst(match.get_nw_dst_value());
             //std::cout<<"nw_dst_not_wildcarded: "<<match.get_nw_dst_value().addr_c_str()<<"\n";
@@ -983,6 +984,7 @@ cofmatch  orchestrator::process_matching(cofmsg_flow_mod *msg, uint8_t ofversion
     } 
     return common_match;
 }
+
 bool      orchestrator::process_action_list(flowpath &flows,cofmatch common_match,cofaclist aclist, uint8_t ofversion, uint32_t inport,uint8_t nw_proto, uint8_t message){
     flowpath flowlist;
     flowlist.longest=0;
@@ -1332,7 +1334,7 @@ void      orchestrator::fill_flowpath(flowpath &flows,cofmatch common_match,cofa
                 flows.flowmodlist[outdpid]->match = common_match;
                 flows.flowmodlist[outdpid]->set_table_id(1);
                 flows.flowmodlist[outdpid]->match.set_in_port(proxy->portconfig.cmts_port);
-                flows.flowmodlist[outdpid]->match.set_metadata(proxy->virtualizer->get_vlan_tag(indpid,outdpid));
+                flows.flowmodlist[outdpid]->match.set_metadata(htobe64(proxy->virtualizer->get_vlan_tag(indpid,outdpid)));
                 flows.flowmodlist[outdpid]->instructions.back().actions=aclist;              
                 flows.flowmodlist[outdpid]->instructions.back().actions.next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport));                    
                 flows.whereask=indpid;
@@ -1443,7 +1445,7 @@ void      orchestrator::fill_flowpath2(flowpath &flows,cofmatch common_match,cof
             //not implemented
             break;
         }
-        case WCtoSPECIAL:{
+        case WCtoSPECIAL:{ //BUG table 1 para AGS
             std::set<cofdpt*>::iterator dpt_it2;
             for (dpt_it2 = proxy->ofdpt_set.begin(); dpt_it2 != proxy->ofdpt_set.end(); ++dpt_it2) {
                 cflowentry* temp;
@@ -1507,7 +1509,7 @@ void      orchestrator::fill_flowpath2(flowpath &flows,cofmatch common_match,cof
             flows.flowmodlist[proxy->config.AGS_dpid]->instructions.back().actions.next()= cofaction_set_field(OFP12_VERSION,coxmatch_ofb_vlan_vid (OFPVID_PRESENT|proxy->virtualizer->get_vlan_tag(proxy->config.AGS_dpid,proxy->virtualizer->get_own_dpid(outport))));                                                         
             flows.flowmodlist[proxy->config.AGS_dpid]->instructions.back().actions.next()= cofaction_output(OFP12_VERSION,proxy->portconfig.cmts_port); 
 
-            //std::cout<<"setting DOWNSTREAM flow CLIENT\n";
+            std::cout<<"setting DOWNSTREAM flow CLIENT\n";
             cflowentry* temp2;
             temp2 = new cflowentry (OFP12_VERSION);
             flows.flowmodlist.insert(std::make_pair(proxy->virtualizer->get_own_dpid(outport),temp2)); //INGRESS DPID
@@ -1529,7 +1531,7 @@ void      orchestrator::fill_flowpath2(flowpath &flows,cofmatch common_match,cof
             tempup1 = new cflowentry (OFP12_VERSION);
             flows.flowmodlist.insert(std::make_pair(proxy->virtualizer->get_own_dpid(inport),tempup1));
             flows.flowmodlist[indpid]->match = common_match;
-            flows.flowmodlist[indpid]->set_table_id(0); //table AGS
+            flows.flowmodlist[indpid]->set_table_id(0); //table CLI
             flows.flowmodlist[indpid]->match.set_in_port(proxy->virtualizer->get_real_port_id(inport));
             flows.flowmodlist[indpid]->instructions.next()=cofinst_apply_actions(OFP12_VERSION);
             flows.flowmodlist[indpid]->instructions.back().actions.next()= cofaction_output(OFP12_VERSION,proxy->portconfig.oui_netport); 
@@ -1541,7 +1543,7 @@ void      orchestrator::fill_flowpath2(flowpath &flows,cofmatch common_match,cof
             flows.flowmodlist[outdpid]->match = common_match;
             flows.flowmodlist[outdpid]->set_table_id(1); //AGS table
             flows.flowmodlist[outdpid]->match.set_in_port(proxy->portconfig.cmts_port);
-            flows.flowmodlist[outdpid]->match.set_metadata(proxy->virtualizer->get_vlan_tag(indpid,outdpid));
+            flows.flowmodlist[outdpid]->match.set_metadata((uint64_t)proxy->virtualizer->get_vlan_tag(indpid,outdpid));
             flows.flowmodlist[outdpid]->instructions.back().actions=aclist;              
             flows.flowmodlist[outdpid]->instructions.back().actions.next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport));                    
             flows.whereask=indpid;
