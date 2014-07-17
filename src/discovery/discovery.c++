@@ -231,7 +231,7 @@ discovery::AGS_enable_OUI_traffic(cofdpt* dpt,uint64_t mac, uint16_t vlan){
         fe_data.set_priority(8);
         fe_data.match.set_in_port(proxy->portconfig.cmts_port);
         fe_data.match.set_vlan_vid(OFPVID_PRESENT|vlan);
-        fe_data.instructions.next() = cofinst_write_metadata(OFP12_VERSION,(uint64_t)vlan,0);
+        fe_data.instructions.next() = cofinst_write_metadata(OFP12_VERSION,(uint64_t)vlan,0xFFFFFFFFFFFFFFFF);
         fe_data.instructions.next() = cofinst_apply_actions(OFP12_VERSION);
         fe_data.instructions.back().actions.next() = cofaction_pop_vlan(OFP12_VERSION);
         fe_data.instructions.next() = cofinst_goto_table(OFP12_VERSION,1);
