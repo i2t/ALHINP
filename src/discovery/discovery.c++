@@ -179,9 +179,11 @@ discovery::register_CM(uint64_t mac){
 }
 void 
 discovery::AGS_enable_OUI_traffic(cofdpt* dpt,uint64_t mac, uint16_t vlan){
-    
+    std::cout<<"inserting mac"<<mac<<" "<<vlan<<"\n";
     proxy->virtualizer->insert_mac_vlan(mac,vlan);
-        
+    
+    std::cout<<"inserted mac\n"<<proxy->virtualizer->get_vlan_from_mac(mac)<<"\n";
+    
     cflowentry fe_up(0x03); 
         fe_up.set_command(OFPFC_ADD);
         fe_up.set_buffer_id(OFP_NO_BUFFER);

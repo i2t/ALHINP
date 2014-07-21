@@ -232,7 +232,9 @@ void      orchestrator::dispath_PACKET_IN(cofdpt *dpt, cofmsg_packet_in *msg){
                     string = msg->get_packet().payload()->c_str();
                     std::string::iterator end_pos = std::remove(string.begin(), string.end(), ' ');
                     string.erase(end_pos, string.end());
+                    //Depending on CM MAC
                     unsigned pos = string.find("a4a24a");
+                    //unsigned pos = string.find("001e6b");
                     std::string bootp_mac;
 
                     bootp_mac = string.substr(pos,12);
@@ -1161,7 +1163,7 @@ bool      orchestrator::process_action_list2(flowpath &flows,cofmatch common_mat
                         
                         flowtype = typeflow2(inport,htobe16((*it).oac_oacu.oacu_10output->port));
                         std::cout<<"Flowtype "<< (int)flowtype<<" processing...\n";
-                        fill_flowpath2(flowlist,filling_match,instrlist.back().actions, inport,htobe16((*it).oac_oacu.oacu_10output->port),flowtype);
+                        fill_flowpath2(flowlist,common_match,instrlist.back().actions, inport,htobe16((*it).oac_oacu.oacu_10output->port),flowtype);
                         instrlist.back().actions.clear();
                         break;
                         
@@ -1440,7 +1442,9 @@ void      orchestrator::fill_flowpath(flowpath &flows,cofmatch common_match,cofa
 }
 void      orchestrator::fill_flowpath2(flowpath &flows,cofmatch common_match,cofaclist aclist,uint32_t inport, uint32_t outport, uint8_t flowtype){
     std::cout<<"debugging actions entering at fill flowpath "<<aclist.c_str()<<"\n";
-    switch(flowtype){
+
+    
+    switch(flowtype){ //CHANGED
         case WCtoALL:{
             //not implemented
             break;
@@ -1459,7 +1463,8 @@ void      orchestrator::fill_flowpath2(flowpath &flows,cofmatch common_match,cof
             break;            
         }
         case WCtoAGS:{
-            uint64_t outdpid = proxy->virtualizer->get_own_dpid(outport); 
+            uint64_t outdpid = proxy->virtualizer->get_own_dpid(outport);
+            
             cflowentry* tempup2;
             tempup2 = new cflowentry (OFP12_VERSION);
             flows.flowmodlist.insert(std::make_pair(proxy->virtualizer->get_own_dpid(outport),tempup2));
@@ -1489,6 +1494,47 @@ void      orchestrator::fill_flowpath2(flowpath &flows,cofmatch common_match,cof
             break;
         }
         case WCtoCLIENT:{
+           uint64_t outdpid = proxy->virtualizer->get_own_dpid(outport); 
+           // uint64_t outdpid = proxy->virtualizer->get_own_dpid(12); 
+            //OUTPUT DPID
+            std::set<cofdpt*>::iterator dpt_it2;
+            for (dpt_it2 = proxy->ofdpt_set.begin(); dpt_it2 != proxy->ofdpt_set.end(); ++dpt_it2) {
+                if((*dpt_it2)->get_dpid()!=proxy->config.AGS_dpid){
+                    if((*dpt_it2)->get_dpid()==outdpid){
+                        cflowentry* tempup2;
+                        tempup2 = new cflowentry (OFP12_VERSION);
+                        flows.flowmodlist.insert(std::make_pair(proxy->virtualizer->get_own_dpid(outport),tempup2));
+                        flows.flowmodlist[outdpid]->match = common_match;
+                        flows.flowmodlist[outdpid]->set_table_id(0); //AGS table
+                        flows.flowmodlist[outdpid]->match.set_in_port(proxy->portconfig.oui_netport);   
+                        
+                        flows.flowmodlist[outdpid]->instructions.next()=cofinst_apply_actions(OFP12_VERSION); 
+                        flows.flowmodlist[outdpid]->instructions.back().actions=aclist;  
+                        flows.flowmodlist[outdpid]->instructions.back().actions.next()= cofaction_output(OFP12_VERSION,proxy->virtualizer->get_real_port_id(outport)); 
+                    }else{
+                        cflowentry* temp;
+                        temp = new cflowentry (OFP12_VERSION);   
+                        flows.flowmodlist.insert(std::make_pair((*dpt_it2)->get_dpid(),temp));
+                        flows.flowmodlist[(*dpt_it2)->get_dpid()]->match = common_match;
+                        flows.flowmodlist[(*dpt_it2)->get_dpid()]->set_table_id(0); //AGS table
+                        flows.flowmodlist[(*dpt_it2)->get_dpid()]->match.set_in_port(proxy->portconfig.oui_userport);
+                        flows.flowmodlist[(*dpt_it2)->get_dpid()]->instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                        flows.flowmodlist[(*dpt_it2)->get_dpid()]->instructions.back().actions.next()=cofaction_output(OFP12_VERSION,proxy->portconfig.oui_netport);
+                    } 
+                }else{
+                    cflowentry* temp;
+                    temp = new cflowentry (OFP12_VERSION);   
+                    flows.flowmodlist.insert(std::make_pair((*dpt_it2)->get_dpid(),temp));
+                    flows.flowmodlist[(*dpt_it2)->get_dpid()]->match = common_match;
+                    
+                    flows.flowmodlist[(*dpt_it2)->get_dpid()]->set_table_id(1); //AGS table
+                    flows.flowmodlist[(*dpt_it2)->get_dpid()]->instructions.next()=cofinst_apply_actions(OFP12_VERSION);
+                    flows.flowmodlist[(*dpt_it2)->get_dpid()]->instructions.back().actions.next()= cofaction_push_vlan(OFP12_VERSION,C_TAG); 
+                    flows.flowmodlist[(*dpt_it2)->get_dpid()]->instructions.back().actions.next()= cofaction_set_field(OFP12_VERSION,coxmatch_ofb_vlan_vid (proxy->virtualizer->get_vlan_tag(proxy->config.AGS_dpid,proxy->virtualizer->get_own_dpid(outport))));  
+                    flows.flowmodlist[(*dpt_it2)->get_dpid()]->instructions.back().actions.next()=cofaction_output(OFP12_VERSION,proxy->portconfig.cmts_port);                    
+                }
+
+            }
             break;
         }
         case error:{

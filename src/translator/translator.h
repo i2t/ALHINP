@@ -72,9 +72,10 @@ private:
     //std::map<uint32_t , uint64_t>                       ip_mac;
     
     uint16_t find_vlan_tag(uint64_t dpid);
-    uint16_t get_vlan_from_mac(uint64_t mac);
+    //uint16_t get_vlan_from_mac(uint64_t mac);
     uint32_t translating_algorithm(uint64_t dpid, uint32_t realport);
 public:
+    uint16_t get_vlan_from_mac(uint64_t mac);
     uint16_t get_vlan_tag(uint64_t dpid_src,uint64_t dpid_dst);
     void insert_mac_vlan(uint64_t mac, uint16_t vlan);
     void enable_device(uint64_t mac, uint64_t dpid,std::string dpid_s);

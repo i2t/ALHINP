@@ -52,6 +52,8 @@ void translator::enable_device(uint64_t mac, uint64_t dpid,std::string dpid_s){
     dpid_vlan.insert(std::make_pair(dpid,1));
     std::cout <<"\n" << dpid_s <<" as Device ID "<< (uint16_t)dpid_vlan [dpid] <<"\n";
     }else{
+        std::cout<<"enable mac"<<mac<<"\n";
+        std::cout<<"enable dpid"<<dpid<<"\n";
     dpid_vlan.insert(std::make_pair(dpid,get_vlan_from_mac(mac)));
     std::cout <<"\n" << dpid_s <<" as Device ID "<< (uint16_t)dpid_vlan [dpid] <<"\n";
     }
