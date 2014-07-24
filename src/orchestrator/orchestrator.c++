@@ -1446,7 +1446,7 @@ void      orchestrator::fill_flowpath2(flowpath &flows,cofmatch common_match,cof
     
     switch(flowtype){ //CHANGED
         case WCtoALL:{
-            //not implemented
+            //not implemented yet
             break;
         }
         case WCtoSPECIAL:{ //BUG table 1 para AGS
@@ -1929,7 +1929,12 @@ void      orchestrator::handle_flow_stats_reply (cofdpt *dpt, cofmsg_flow_stats_
     }
     proxy->send_flow_stats_reply(proxy->controller,0x5621,templist,true);
 }
-
+void      orchestrator::handle_table_stats_request (cofctl *ctl, cofmsg_table_stats_request *msg){
+    //ignore
+    proxy->send_error_message(proxy->controller,msg->get_xid(),OFPET_BAD_REQUEST,OFPBRC_BAD_STAT,msg->soframe(),msg->framelen());
+    delete msg;
+    return;
+} //IGNORING
 void      orchestrator::handle_port_stats_request (cofctl *ctl, cofmsg_port_stats_request *msg){
     try{
         if(msg->get_port_stats().get_portno()==OFPP10_NONE){
@@ -1976,12 +1981,7 @@ void      orchestrator::handle_port_stats_reply (cofdpt *dpt, cofmsg_port_stats_
     }
     proxy->send_port_stats_reply(proxy->controller,0x5621,templist,true);
  }
-void      orchestrator::handle_table_stats_request (cofctl *ctl, cofmsg_table_stats_request *msg){
-    //ignore
-    proxy->send_error_message(proxy->controller,msg->get_xid(),OFPET_BAD_REQUEST,OFPBRC_BAD_STAT,msg->soframe(),msg->framelen());
-    delete msg;
-    return;
-} //IGNORING
+
 
 /******************************  TESTING FUNCTIONS ************************************/
 void      orchestrator::flow_test(cofdpt* dpt){

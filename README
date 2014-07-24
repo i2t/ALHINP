@@ -1,13 +1,13 @@
 
 What it is
 ==========
-
-<Description>
+ALHINP is a control path daemon designed to manipulate the openflow control path for a DOCSIS access network. ALHINP translates OpenFlow received from a controller to the cooresponding actions or messages over the elements conforming the access network
+ 
 
 Supported platforms
 ===================
 
-Shipped with all xDPd instances:
+
 - GNU/Linux amd64/x86 user-space with mmap or netmap (gnu-linux). open-source
 
 
@@ -18,7 +18,7 @@ Requirements
 - GNU/Linux and libc development headers (linux-libc-dev and libc6-dev package in Debian/Ubuntu systems)
 - pkg-config
 - libconfig C++ lib (libconfig++-dev in Debian/Ubuntu systems)
-- ROFL libraries installed [1]
+- ROFL libraries installed (branch devel-0.3) [1]
 
 [1] https://www.codebasin.net/redmine/projects/rofl-core/wiki
 
@@ -27,9 +27,10 @@ How to build
 
 Install the dependencies and run:
 
-sh# ./configure
-sh# make
-
+git clone https://github.com/fp7-alien/alien-DOCSIS
+cd ALHINP
+./configure
+make
 
 
 More information, documentation and support
@@ -37,11 +38,7 @@ More information, documentation and support
 
 Please visit: 
 http://i2t.ehu.es/
-https://github.com/i2t/ALHINP
-
-Authorship
-==========
-
+https://github.com/fp7-alien/alien-DOCSIS
 
 
 

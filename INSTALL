@@ -1,0 +1,65 @@
+          ==== Compiling source code of ROFL ====
+
+$ git clone https://github.com/bisdn/rofl-core
+$ cd rofl-core
+$ git checkout devel-0.3
+$ sh autogen.sh
+$ cd build
+$ ../configure
+$ make
+$ sudo make install
+
+it also requires libconfig++-dev library. For Debian-based distributions:
+$ apt-get install libconfig++-dev
+
+        ==== Compiling source code of ALHINP ====
+
+git clone https://github.com/fp7-alien/alien-DOCSIS
+cd ALHINP
+./configure
+make
+
+               ==== Running ALHINP ====
+
+Running ALHINP
+./ALHINP <ALHINP.cfg>
+This file describes required parameters to connect all devices in the ALIEN DOCSIS platform
+
+               ====  ALHINP config FILE example ====
+// An example of ALHINP configuration file content.
+name = "ALHINP";
+desc = "EHU DOCSIS OF abstracted switch";
+dpid = "1000000000000001";
+// configuration:
+ALHINP-config = {
+//CONTROLLER-parameters
+       CONTROLLER_IP           ="127.0.0.1";
+       CONTROLLER_OF_VERSION   ="1.0";
+       CONTROLLER_PORT         =6633;
+       LISTENING_IP_AGS        ="158.227.98.21";   
+       LISTENING_PORT_AGS      =6633;
+       LISTENING_IP_OUIS       ="192.168.10.1";   
+       LISTENING_PORT_OUIS     =6633;
+       DPS_IP                  ="10.10.10.62";
+       CMTS_IP                 ="158.227.98.6";
+       // MAC range of OF interface of the OUIs
+       OUI_MAC                 ="02:00:0C:00:00:00";
+       // Cable Modem MAC mask 
+       CM_MAC                  ="A4:A2:4A:00:00:00";    
+       VLANstart               = 2;
+};
+// Port configuration
+Port-config = {
+   //AGS ports
+       CMTS_PORT   =1;
+       DATA_PORT   =2;
+       DPS_PORT    =3;
+       PROXY_PORT  =4;
+   //OUIs ports
+       OUI_NETPORT =2;
+       OUI_USERPORT=1;
+};
+AGS-config ={
+       AGSDPID     ="1";
+};
+
